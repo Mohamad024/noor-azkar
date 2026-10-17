@@ -696,9 +696,11 @@ document.addEventListener('DOMContentLoaded', () => {
   bindTasbih();
   renderTasbih();
   bindUI();
-  // تفعيل القسم من العنوان (إن وُجد) وإلا الافتراضي
-  const initId = SECTION_DESCS[location.hash.slice(1)] ? location.hash.slice(1) : 'morning';
-  showSection(initId, false);
+  // تفعيل القسم من العنوان (إن وُجد) وإلا الافتراضي — في الصفحات الفرعية بلا أذكار لا نغيّر شيئاً
+  if (SECTIONS.some((s) => document.getElementById(s.target))) {
+    const initId = SECTION_DESCS[location.hash.slice(1)] ? location.hash.slice(1) : 'morning';
+    showSection(initId, false);
+  }
   window.scrollTo(0, 0);
   renderDayProgress();
   setInterval(renderDayProgress, 60 * 1000);
