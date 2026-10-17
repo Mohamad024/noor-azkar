@@ -1,0 +1,8 @@
+# النسخ الاحتياطية المحلية (تبقى على جهازك فقط)
+_snapshots/
+
+# ملفات خاصة غير تابعة للموقع
+ar_Who_is_Muhammad.pdf
+desktop.ini
+~$*
+Thumbs.db

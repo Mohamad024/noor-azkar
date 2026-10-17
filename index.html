@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<!--
+  ﴿ نُورُ الذِّكْر ﴾ — أذكار صحيحة وأدعية مأثورة
+  ─────────────────────────────────────────────────
+  سجل التغييرات (الأحدث أولاً):
+  • 2026-10-17 [v1] النسخة المرجعية المحفوظة في: _snapshots/v1_2026-10-17_20-41-16
+    - قسم الأذكار (صفحة واحدة لكل قسم عبر شريط تبويبات) بدل عرض كل الأقسام تحت بعضها
+    - لون ثيمة مختلف لكل نوع ذكر (الصباح ذهبي، المساء بنفسجي، النوم أزرق...) للبطاقات والحدود
+    - عدّاد متبقٍّ لكل ذكر، وزر [+1] بعد كل مرة، وتختفي بطاقة الذكر عند وصول العدّاد إلى الصفر
+    - عدّادات الإحصاء أعلى الصفحة (أتممتَ اليوم/المتبقّي عليك/إجمالي الإنجاز) وزر «إعادَة الكلّ»
+    - المسبحة الإلكترونية + أهداف 33/99/100 + مشجر الإنجاز
+    - وضع ليلي وحسّن حجم الخط متُحفظان تلقائياً + تصميم متجاوب للهاتف والحاسوب
+  ─────────────────────────────────────────────────
+  ❗قبل أي تعديل خطر: انسخ هذه النسخة عبر save-snapshot.ps1 (أو نسخ يدوي) إلى مجلد _snapshots
+-->
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="موقع الأذكار — أذكار الصباح والمساء والنوم وأدعية صحيحة مأثورة عن النبي ﷺ، مع مسبحة إلكترونية." />
+<meta name="theme-color" content="#0b3d2e" />
+<!--
+  سجل التغييرات التطبيقية:
+  • 2026-10-17 [v2] التحويل إلى تطبيق قابل للتثبيت + العمل دون اتصال (بدون Service Worker)
+    - أُضيف manifest.webmanifest (الاسم والاسم المختصر ورابط البدأ والوضع المستقل ولون السمة والخلفية)
+    - أيقونات: 192 و512 (any) + 512 قابلة للقص (maskable) للاندرويد + 180 (apple-touch) للآيفون
+    - الخطوط أصبحت محلية (fonts/fonts.css) بدل Google Fonts = الموقع يعمل كاملاً بلا إنترنت
+    - <link rel="manifest"> و <link rel="apple-touch-icon" sizes="180x180">
+    - لالتثبيت على الهاتف: ارفع مجلد الموقع لأي استضافة HTTPS (مثل GitHub Pages) ثم افتحه واختر «إضافة إلى الشاشة الرئيسية»، أو هو في وضع الملف المحلي يعمل دون اتصال أصلاً.
+-->
+<title>نور الذكر — أذكار صحيحة وأدعية مأثورة</title>
+<!-- ملف تعريف التطبيق (PWA) -->
+<link rel="manifest" href="manifest.webmanifest" />
+<!-- أيقونات التثبيت -->
+<link rel="icon" href="icons/icon-192.png" sizes="192x192" />
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="نور الذكر" />
+<!-- الخطوط (محلية — تعمل دون اتصال) -->
+<link rel="stylesheet" href="fonts/fonts.css" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- شريط علوي -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="#home">
+      <span class="brand-icon">☾</span>
+      <span class="brand-text">نُورُ الذِّكْر</span>
+    </a>
+    <nav class="main-nav" id="mainNav">
+      <a href="#home" class="nav-link active">الرئيسية</a>
+      <a href="#morning" class="nav-link">أذكار الصباح</a>
+      <a href="#evening" class="nav-link">أذكار المساء</a>
+      <a href="#sleep" class="nav-link">أذكار النوم</a>
+      <a href="#prayer" class="nav-link">بعد الصلاة</a>
+      <a href="#duas" class="nav-link">أدعية مأثورة</a>
+      <a href="#tasbih" class="nav-link">المسبحة</a>
+    </nav>
+    <div class="top-actions">
+      <button id="fontBtn" class="icon-btn" title="حجم الخط" aria-label="حجم الخط">أ<span class="font-a">+</span></button>
+      <button id="themeBtn" class="icon-btn" title="الوضع الليلي" aria-label="الوضع الليلي">🌙</button>
+      <button id="menuBtn" class="icon-btn burger" title="القائمة" aria-label="القائمة">☰</button>
+    </div>
+  </div>
+  <div class="progress-bar" id="scrollProgress"></div>
+</header>
+
+<!-- البطل -->
+<section class="hero" id="home">
+  <div class="hero-pattern" aria-hidden="true"></div>
+  <div class="hero-content">
+    <p class="hero-bismillah">﷽</p>
+    <h1 class="hero-title">﴿ أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ ﴾</h1>
+    <p class="hero-sub">سورة الرعد، الآية 28</p>
+    <p class="hero-desc">
+      أذكار صحيحة ثابتة، الخصت من كتاب الله وسنة نبيه ﷺ بخلاف الحسن حسنة.
+      أذكار الصباح والمساء والنوم وما بعد الصلاة، وأدعية مأثورة، ومسبحة إلكترونية.
+    </p>
+    <div class="hero-cta">
+      <a href="#morning" class="btn btn-gold">ابدأ بأذكار الصباح</a>
+      <a href="#evening" class="btn btn-ghost">أذكار المساء</a>
+      <a href="#tasbih" class="btn btn-ghost">المسبحة الإلكترونية</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><span class="num" id="statMorning">0</span><small>ذكر صباحاً</small></div>
+      <div class="stat"><span class="num" id="statEvening">0</span><small>ذكر مساءً</small></div>
+      <div class="stat"><span class="num" id="statTotal">0</span><small>ذكر وأذكار</small></div>
+    </div>
+  </div>
+  <div class="hero-arrow" aria-hidden="true">❯</div>
+</section>
+
+<!-- شريط تقدم اليوم -->
+<div class="day-progress-wrap" id="dayProgressWrap">
+  <div class="container">
+    <div class="day-progress">
+      <div class="dp-info">
+        <span class="dp-label">تقدّم أذكارك اليوم</span>
+        <span class="dp-value" id="dpValue">0٪</span>
+      </div>
+      <div class="dp-track"><div class="dp-fill" id="dpFill"></div></div>
+      <div class="dp-stats">
+        <span class="stat-chip done-chip">أتممتَ اليوم: <b id="chipDone">0</b></span>
+        <span class="stat-chip">المتبقّي عليك: <b id="chipLeft">0</b></span>
+        <span class="stat-chip gold-chip">إجمالي الإنجاز: <b id="chipTotal">0</b></span>
+        <button class="reset-btn" id="resetAllBtn" title="إظهار كل الأذكار من جديد">↺ إعادَة الكلّ</button>
+      </div>
+      <p class="dp-hint" id="dpHint">ابدأ يومك بذكر الله، فهو أشرف السّاعات.</p>
+    </div>
+  </div>
+</div>
+
+<!-- شريط اختيار القسم -->
+<div class="cat-wrap" id="catTop">
+  <div class="container">
+    <nav class="cat-tabs" id="catTabs" aria-label="اختيار قسم الأذكار">
+      <button class="cat-tab active" data-target="morning"><span>🌅</span> أذكار الصباح</button>
+      <button class="cat-tab" data-target="evening"><span>🌆</span> أذكار المساء</button>
+      <button class="cat-tab" data-target="sleep"><span>🌙</span> أذكار النوم</button>
+      <button class="cat-tab" data-target="prayer"><span>🕌</span> بعد الصلاة</button>
+      <button class="cat-tab" data-target="duas"><span>🤲</span> أدعية مأثورة</button>
+      <button class="cat-tab" data-target="tasbih"><span>📿</span> المسبحة</button>
+    </nav>
+    <p class="cat-desc" id="catDesc"></p>
+  </div>
+</div>
+
+<main class="container">
+
+  <!-- أقسام الأذكار (يظهر قسماً واحداً حسب الاختيار) -->
+  <section class="zikr-section active" id="morning" data-section="morning">
+    <header class="section-head">
+      <div class="section-icon">🌅</div>
+      <div>
+        <h2>أذكار الصباح</h2>
+        <p>تورد بعد الفجر حتى طلوع الشمس</p>
+      </div>
+    </header>
+    <div class="cards" id="cardsMorning"></div>
+  </section>
+
+  <section class="zikr-section" id="evening" data-section="evening">
+    <header class="section-head">
+      <div class="section-icon">🌆</div>
+      <div>
+        <h2>أذكار المساء</h2>
+        <p>تورد بعد العصر حتى غروب الشمس</p>
+      </div>
+    </header>
+    <div class="cards" id="cardsEvening"></div>
+  </section>
+
+  <section class="zikr-section" id="sleep" data-section="sleep">
+    <header class="section-head">
+      <div class="section-icon">🌙</div>
+      <div>
+        <h2>أذكار النوم</h2>
+        <p>ما يقال عند الاستغفار على الفراش</p>
+      </div>
+    </header>
+    <div class="cards" id="cardsSleep"></div>
+  </section>
+
+  <section class="zikr-section" id="prayer" data-section="prayer">
+    <header class="section-head">
+      <div class="section-icon">🕌</div>
+      <div>
+        <h2>الذكر بعد الصلاة</h2>
+        <p>التسبيح بعد كل صلاة مكتوبة</p>
+      </div>
+    </header>
+    <div class="cards" id="cardsPrayer"></div>
+  </section>
+
+  <section class="zikr-section" id="duas" data-section="duas">
+    <header class="section-head">
+      <div class="section-icon">🤲</div>
+      <div>
+        <h2>أدعية مأثورة</h2>
+        <p>أدعية ثابتة في السنة الصحيحة</p>
+      </div>
+    </header>
+    <div class="cards" id="cardsDuas"></div>
+  </section>
+
+  <!-- المسبحة -->
+  <section class="zikr-section" id="tasbih" data-section="tasbih">
+    <header class="section-head">
+      <div class="section-icon">📿</div>
+      <div>
+        <h2>المسبحة الإلكترونية</h2>
+        <p>اضغط الدائرة للتسبيح، وتُحفظ حسباتك تلقائياً</p>
+      </div>
+    </header>
+
+    <div class="tasbih-card">
+      <div class="tasbih-phrase-row">
+        <button class="phrase-chip" data-phrase="سُبْحَانَ اللَّهِ">سُبْحَانَ اللَّهِ</button>
+        <button class="phrase-chip" data-phrase="الْحَمْدُ لِلَّهِ">الْحَمْدُ لِلَّهِ</button>
+        <button class="phrase-chip" data-phrase="لَا إِلَٰهَ إِلَّا اللَّهُ">لَا إِلَٰهَ إِلَّا اللَّهُ</button>
+        <button class="phrase-chip" data-phrase="اللَّهُ أَكْبَرُ">اللَّهُ أَكْبَرُ</button>
+        <button class="phrase-chip" data-phrase="أَسْتَغْفِرُ اللَّهَ">أَسْتَغْفِرُ اللَّهَ</button>
+        <button class="phrase-chip" data-phrase="لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ">لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ</button>
+      </div>
+      <p class="tasbih-phrase" id="tasbihPhrase">سُبْحَانَ اللَّهِ</p>
+
+      <button class="tasbih-circle" id="tasbihBtn" aria-label="اضغط للتسبيح">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="track" cx="60" cy="60" r="54" />
+          <circle class="fill" id="tasbihRing" cx="60" cy="60" r="54" />
+        </svg>
+        <span class="tasbih-count" id="tasbihCount">0</span>
+      </button>
+
+      <div class="tasbih-target-row">
+        <span class="t-label">الهدف:</span>
+        <button class="target-chip" data-target="33">33</button>
+        <button class="target-chip" data-target="99">99</button>
+        <button class="target-chip" data-target="100">100</button>
+        <button class="target-chip" data-target="0">بحسب</button>
+      </div>
+
+      <div class="tasbih-actions">
+        <button id="tasbihReset" class="btn btn-ghost small">تصفير العدّاد</button>
+        <span class="tasbih-rounds">الدورات المكتملة: <b id="tasbihRounds">0</b></span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <p class="footer-duq">﴿ فَاذْكُرُونِي أَذْكُرْكُمْ ﴾ — البقرة 152</p>
+  <p>جميع الأذكار هنا مأخوذة من صحيح البخاري وصحيح مسلم وسنن الترمذي وأبي داود ضمن الأحاديث الصحيحة.</p>
+  <p class="footer-note">﴿ إِن يَدْعُوكُمْ سَـٰمِعُكُمْ فَإِن تَرْجُوا نِ عَانَهُ وَإِن يَكْتُبُوا نِ سَمَاعُهُمْ ﴾</p>
+</footer>
+
+<button id="toTop" class="to-top" aria-label="العودة للأعلى">❯</button>
+
+<script src="app.js"></script>
+</body>
+</html>
