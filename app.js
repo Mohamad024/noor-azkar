@@ -377,9 +377,9 @@ function render() {
     });
     totalItems += sec.items.length;
   });
-  $('#statMorning').textContent = MORNING.length;
-  $('#statEvening').textContent = EVENING.length;
-  $('#statTotal').textContent = totalItems;
+  $('#statMorning') && ($('#statMorning').textContent = MORNING.length);
+  $('#statEvening') && ($('#statEvening').textContent = EVENING.length);
+  $('#statTotal') && ($('#statTotal').textContent = totalItems);
 }
 
 /* عدّاد كل ذكر: كل ضغطة = نزول المتبقّي ١، وعند الصفر تختفي البطاقة */
@@ -431,6 +431,7 @@ function bindCounters() {
 
 /* إعادة كل الأذكار للظهور من جديد */
 function bindResetAll() {
+  if (!document.getElementById('resetAllBtn')) return;
   $('#resetAllBtn').addEventListener('click', () => {
     SECTIONS.forEach((s) => localStorage.removeItem('nz_done_' + s.id));
     localStorage.removeItem('nz_day');
@@ -481,6 +482,7 @@ function bumpRepCounter() {
 }
 
 function renderDayProgress() {
+  if (!document.getElementById('dpValue')) return;
   const h = new Date().getHours();
   const isMorning = h >= 4 && h < 16;
   const secId = isMorning ? 'morning' : 'evening';
@@ -533,6 +535,7 @@ const tasbihState = {
 };
 
 function renderTasbih() {
+  if (!document.getElementById('tasbihPhrase')) return;
   $('#tasbihPhrase').textContent = tasbihState.phrase;
   $('#tasbihCount').textContent = tasbihState.count;
   $('#tasbihRounds').textContent = tasbihState.rounds;
@@ -569,6 +572,7 @@ function tasbihTap() {
 }
 
 function bindTasbih() {
+  if (!document.getElementById('tasbihBtn')) return;
   $('#tasbihBtn').addEventListener('click', tasbihTap);
   $('#tasbihReset').addEventListener('click', () => {
     tasbihState.count = 0;
@@ -654,7 +658,7 @@ const SECTION_DESCS = {
 function showSection(id, scroll = true) {
   $$('.zikr-section').forEach((s) => s.classList.toggle('active', s.id === id));
   const tab = document.querySelector(`.cat-tab[data-target="${id}"]`);
-  if (tab) {
+  if (tab && document.getElementById('catDesc')) {
     $$('.cat-tab').forEach((t) => t.classList.toggle('active', t === tab));
     $('#catDesc').textContent = SECTION_DESCS[id] || '';
   }

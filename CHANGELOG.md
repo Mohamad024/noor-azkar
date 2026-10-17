@@ -35,3 +35,11 @@ Copy-Item "_snapshots/v1_2026-10-17_20-41-16/*" -Destination . -Force
 ## snapshot 2026-10-17_21-12-34
 **desc:** v2-pwa-installable-offline-manifest-icons-local-fonts
 **folder:** _snapshots/v_2026-10-17_21-12-34_v2-pwa-installable-offline-manifest-icons-local-fonts
+
+## snapshot 2026-10-17_21-40-27
+**desc:** v2-published-to-github-pages
+**folder:** _snapshots/v_2026-10-17_21-40-27_v2-published-to-github-pages
+
+## snapshot 2026-10-17_21-50-32
+**desc:** v3-islam-info-subpage
+**folder:** _snapshots/v_2026-10-17_21-50-32_v3-islam-info-subpage
