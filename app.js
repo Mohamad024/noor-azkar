@@ -251,11 +251,11 @@ function refreshUserUI(opts = {}) {
     $('#dashUserHint')?.classList.add('hidden');
   } else {
     chip.innerHTML = `
-      <button onclick="openView('profile')" class="w-full flex items-center gap-3 rounded-2xl bg-white/5 border border-dashed border-white/20 p-3 hover:bg-white/10 transition-colors">
-        <span class="w-10 h-10 rounded-xl bg-white/10 grid place-items-center text-xl">👤</span>
+      <button onclick="openView('profile')" class="w-full flex items-center gap-3 rounded-2xl bg-emerald-900/5 dark:bg-white/5 border border-dashed border-emerald-800/20 dark:border-white/20 p-3 hover:bg-emerald-900/10 dark:hover:bg-white/10 transition-colors">
+        <span class="w-10 h-10 rounded-xl bg-emerald-900/10 dark:bg-white/10 grid place-items-center text-xl shrink-0">👤</span>
         <div class="text-right">
-          <div class="text-sm font-bold text-white">زائر</div>
-          <div class="text-[11px] text-emerald-200/70">سجّل دخولك ليُحسب إنجازك</div>
+          <div class="text-sm font-bold text-emerald-900 dark:text-white">زائر</div>
+          <div class="text-[11px] side-text-sub">سجّل دخولك ليُحسب إنجازك</div>
         </div>
       </button>`;
     $('#dashUserHint')?.classList.remove('hidden');
@@ -418,9 +418,14 @@ function renderTasbih() {
 function updateRing() {
   const ring = document.getElementById('tasbihRing'); if (!ring) return;
   const t = tasbihState.target > 0 ? tasbihState.target : 33;
-  ring.style.strokeDashoffset = 339.3 * (1 - Math.min(tasbihState.count / t, 1));
+  const ratio = Math.min(tasbihState.count / t, 1);
+  ring.style.strokeDashoffset = 339.3 * (1 - ratio);
+  const pct = document.getElementById('tasbihPct');
+  if (pct) pct.textContent = tasbihState.target > 0 ? `${Math.round(ratio * 100)}٪ من ${tasbihState.target}` : 'بالحسبِ';
+  document.getElementById('tasbihCount')?.setAttribute('aria-valuenow', String(tasbihState.count));
 }
-function tasbihTap() {
+
+function tasbihTap(e) {
   tasbihState.count++;
   let done = false;
   if (tasbihState.target > 0 && tasbihState.count >= tasbihState.target) { tasbihState.rounds++; done = true; tasbihState.count = 0; }
@@ -435,12 +440,29 @@ function tasbihTap() {
   STORE.set('nz_phrase', tasbihState.phrase); STORE.set('nz_count', tasbihState.count);
   STORE.set('nz_target', tasbihState.target); STORE.set('nz_rounds', tasbihState.rounds);
   renderTasbih(); refreshUserUI({ cards: false });
+
+  // رِدّة فعل ملموسة عالمية المستوى: شعويه عند نقطة اللمس + اهتزاز خفيف على الجوال
+  const btn = document.getElementById('tasbihBtn');
+  if (btn) {
+    if (e && btn.classList.contains('relative')) {
+      const rect = btn.getBoundingClientRect();
+      const p = document.createElement('span');
+      p.className = 'ripple';
+      const cx = e.clientX ? e.clientX - rect.left : rect.width / 2;
+      const cy = e.clientY ? e.clientY - rect.top : rect.height / 2;
+      p.style.left = cx + 'px'; p.style.top = cy + 'px';
+      btn.appendChild(p);
+      p.addEventListener('animationend', () => p.remove());
+    }
+    if (done) { btn.classList.remove('gold-flash'); void btn.offsetWidth; btn.classList.add('gold-flash'); }
+  }
+  if (navigator.vibrate) navigator.vibrate(done ? [50, 60, 50] : 12);
   if (done) toast(`أتممت دورة «${tasbihState.phrase}» — بارك الله فيك`, true);
 }
 function bindTasbih() {
   if (!document.getElementById('tasbihBtn')) return;
   $('#tasbihBtn').addEventListener('click', tasbihTap);
-  $('#tasbihReset').addEventListener('click', () => { tasbihState.count = 0; STORE.set('nz_count', 0); renderTasbih(); });
+  $('#tasbihReset')?.addEventListener('click', () => { tasbihState.count = 0; STORE.set('nz_count', 0); renderTasbih(); });
   $('#phraseRow')?.addEventListener('click', (e) => {
     const c = e.target.closest('.phrase-chip'); if (!c) return;
     tasbihState.phrase = c.dataset.phrase; tasbihState.count = 0;
@@ -449,6 +471,11 @@ function bindTasbih() {
   $$('.target-chip').forEach((c) => c.addEventListener('click', () => {
     tasbihState.target = +c.dataset.target; STORE.set('nz_target', tasbihState.target); renderTasbih();
   }));
+  // الدعم بلوحة المفاتيح: مسافة/Enter بعد أي تركيز على الأدوات
+  document.addEventListener('keydown', (e) => {
+    if (document.getElementById('view-tasbih')?.classList.contains('hidden')) return;
+    if ((e.code === 'Space' || e.code === 'Enter') && e.target === document.body) { e.preventDefault(); tasbihTap(); }
+  });
 }
 
 /* ==========================================================
@@ -464,36 +491,161 @@ function openView(id, scroll = true) {
   $$('.view-sec').forEach((s) => s.classList.toggle('hidden', s.id !== 'view-' + id));
   const v = $('#view-' + id);
   if (v) { v.classList.remove('view-in'); void v.offsetWidth; v.classList.add('view-in'); }
-  $$('.side-link').forEach((l) => {
-    const on = l.dataset.view === id;
-    l.classList.toggle('bg-white/15', on);
-    l.classList.toggle('text-amber-300', on);
-    l.classList.toggle('border-amber-300/40', on);
-  });
-  $('#pageTitle') && ($('#pageTitle').textContent = VIEW_TITLES[id] || '');
+  $$('.side-link').forEach((l) => l.classList.toggle('active', l.dataset.view === id));
+  const t = $('#pageTitle');
+  if (t && VIEW_TITLES[id]) t.textContent = VIEW_TITLES[id];
   if (id === 'tasbih') renderTasbih();
   if (id === 'leaderboard') renderLeaderboard();
   if (id === 'profile') renderProfile();
   history.replaceState(null, '', '#' + id);
   if (scroll) window.scrollTo({ top: 0, behavior: 'smooth' });
   // إغلاق القائمة على الجوال
-  if (typeof closeSidebar === 'function') closeSidebar();
+  if (typeof closeMobileSidebar === 'function') closeMobileSidebar();
 }
 
+/* ---------- بناء القائمة الجانبية المشتركة (كل الصفحات) ---------- */
+const IS_HOME = () => !!document.getElementById('view-dashboard');
+
+function sideLink(href, icon, label, view, badgeId) {
+  return `<a class="side-link" ${view ? `data-view="${view}"` : ''} href="${href}">
+    <span class="text-lg shrink-0">${icon}</span><span class="flex-1">${label}</span>
+    ${badgeId ? `<span class="side-badge" id="${badgeId}"></span>` : ''}
+  </a>`;
+}
+
+function buildSidebar() {
+  const home = IS_HOME();
+  const go = (v) => home ? '#' + v : 'index.html#' + v;
+  const isIslam = location.pathname.toLowerCase().endsWith('islam.html') || /islam\.html/i.test(location.href);
+
+  // الشريط العلوي المشترك
+  const topbar = document.createElement('header');
+  topbar.id = 'topbar';
+  topbar.className = 'topbar2';
+  topbar.innerHTML = `
+    <a href="index.html" class="font-head font-bold text-lg no-underline flex items-center gap-2">
+      <span class="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-300 to-amber-600 text-emerald-950 grid place-items-center">☾</span>
+      <span class="text-emerald-900 dark:text-brand-gold">نُورُ الذِّكْر</span>
+    </a>
+    <span id="pageTitle" class="ms-auto text-xs font-semibold text-stone-500 dark:text-stone-400">${home ? '' : (isIslam ? 'ديوان الموقع' : '')}</span>
+    <button id="burgerBtn" class="burger-btn" aria-label="إظهار/إخفاء القائمة" aria-expanded="true">☰</button>`;
+  document.body.prepend(topbar);
+
+  // ستارة الجوال
+  const backdrop = document.createElement('div');
+  backdrop.id = 'sideBackdrop';
+  backdrop.className = 'side-backdrop';
+  document.body.prepend(backdrop);
+
+  // القائمة
+  const side = document.createElement('aside');
+  side.id = 'sidebar';
+  side.className = 'fixed inset-y-0 right-0 z-[100] flex flex-col overflow-y-auto';
+  side.innerHTML = `
+    <div class="p-4 flex items-center gap-3 shrink-0">
+      <span class="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-300 to-amber-600 grid place-items-center text-xl text-emerald-950 shadow-md shrink-0">☾</span>
+      <div class="min-w-0">
+        <div class="font-head text-xl font-bold shimmer-gold">نُورُ الذِّكْر</div>
+        <div class="side-text-sub text-[10px]">﴿أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ﴾</div>
+      </div>
+      <button id="sideClose" class="ms-auto w-9 h-9 rounded-xl grid place-items-center transition-colors side-icon-btn" aria-label="إغلاق القائمة">✕</button>
+    </div>
+    <div id="userChip" class="px-4 pt-1 pb-2 shrink-0"></div>
+    <nav class="px-3 pb-4 flex-1">
+      <p class="side-heading">الرئيسية</p>
+      ${sideLink(go('dashboard'), '📊', 'لوحة إنجازك', 'dashboard')}
+      <p class="side-heading">الأذكار</p>
+      ${sideLink(go('morning'), '🌅', 'أذكار الصباح', 'morning', 'countMorning')}
+      ${sideLink(go('evening'), '🌆', 'أذكار المساء', 'evening', 'countEvening')}
+      ${sideLink(go('sleep'), '🌙', 'أذكار النوم', 'sleep', 'countSleep')}
+      ${sideLink(go('prayer'), '🕌', 'بعد الصلاة', 'prayer', 'countPrayer')}
+      ${sideLink(go('duas'), '🤲', 'أدعية مأثورة', 'duas', 'countDuas')}
+      <p class="side-heading">أدوات ومسابقات</p>
+      ${sideLink(go('tasbih'), '📿', 'المسبحة', 'tasbih')}
+      ${sideLink(go('leaderboard'), '🏆', 'لوحة الصدارة', 'leaderboard')}
+      ${sideLink(go('profile'), '👤', 'حسابي', 'profile')}
+      <div class="side-divider"></div>
+      ${sideLink('islam.html', '📖', isIslam ? 'ديوان الموقع' : 'عن الإسلام والقرآن', null)}
+    </nav>
+    <div class="p-4 border-t side-divider-t flex items-center gap-2 shrink-0">
+      <button id="themeBtn" class="flex-1 rounded-xl py-2.5 text-sm transition-colors side-icon-btn" aria-label="الوضع الليلي">🌙</button>
+      <button id="fontBtn" class="flex-1 rounded-xl py-2.5 text-sm transition-colors side-icon-btn" aria-label="حجم الخط">أ +</button>
+    </div>`;
+  document.body.prepend(side);
+
+  $$('.side-link').forEach((l) => {
+    if (isIslam && l.getAttribute('href') === 'islam.html') l.classList.add('active');
+  });
+}
+
+/* ---------- التنقل وإظهار/إخفاء القائمة ---------- */
 function bindNav() {
-  $$('.side-link').forEach((l) => l.addEventListener('click', (e) => { e.preventDefault(); openView(l.dataset.view); }));
+  // روابط الأقسام: في الرئيسية تعرض القسم، وفي الصفحات الأخرى تنقل إلى index
+  $$('.side-link[data-view]').forEach((l) => l.addEventListener('click', (e) => {
+    if (IS_HOME()) { e.preventDefault(); openView(l.dataset.view); }
+  }));
   $$('.js-goto').forEach((b) => b.addEventListener('click', () => openView(b.dataset.view)));
-  const drawer = $('#sidebar'), backdrop = $('#sideBackdrop');
-  const open = () => { drawer.classList.remove('translate-x-full'); backdrop.classList.remove('hidden'); document.body.classList.add('overflow-hidden'); };
-  window.closeSidebar = () => { if (innerWidth < 1024) { drawer.classList.add('translate-x-full'); backdrop.classList.add('hidden'); document.body.classList.remove('overflow-hidden'); } };
-  $('#menuBtn')?.addEventListener('click', open);
-  $('#sideClose')?.addEventListener('click', () => { drawer.classList.add('translate-x-full'); backdrop.classList.add('hidden'); document.body.classList.remove('overflow-hidden'); });
-  backdrop?.addEventListener('click', () => { drawer.classList.add('translate-x-full'); backdrop.classList.add('hidden'); document.body.classList.remove('overflow-hidden'); });
+
+  const setBurger = (open) => {
+    const b = $('#burgerBtn');
+    if (!b) return;
+    b.textContent = open ? '✕' : '☰';
+    b.setAttribute('aria-expanded', String(open));
+  };
+
+  function sideState() {
+    const isWide = window.matchMedia('(min-width:1024px)').matches;
+    return { isWide, open: isWide ? !document.documentElement.classList.contains('sb-closed') : document.documentElement.classList.contains('sb-open') };
+  }
+  function syncBurger() { setBurger(sideState().open); }
+
+  window.closeMobileSidebar = () => {
+    if (window.matchMedia('(max-width:1023.98px)').matches) {
+      document.documentElement.classList.remove('sb-open');
+      syncBurger();
+    }
+  };
+  window.toggleSidebar = () => {
+    if (window.matchMedia('(min-width:1024px)').matches) {
+      document.documentElement.classList.toggle('sb-closed');
+      STORE.set('nz_sb', !document.documentElement.classList.contains('sb-closed'));
+    } else {
+      document.documentElement.classList.toggle('sb-open');
+    }
+    syncBurger();
+  };
+
+  $('#burgerBtn')?.addEventListener('click', window.toggleSidebar);
+  $('#sideClose')?.addEventListener('click', window.toggleSidebar);
+  $('#sideBackdrop')?.addEventListener('click', window.closeMobileSidebar);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.documentElement.classList.contains('sb-open')) window.closeMobileSidebar();
+  });
+  // عند تغيير الحجم نضبط الحالة للوضع الصحيح للنقطة الحالية
+  window.addEventListener('resize', () => {
+    if (window.matchMedia('(min-width:1024px)').matches) document.documentElement.classList.remove('sb-open');
+    else document.documentElement.classList.remove('sb-closed');
+    syncBurger();
+  }, { passive: true });
+
+  // الحالة المحفوظة عند الإقلاع (الحاسوب: مفتوحة افتراضياً، الجوال: مغلقة)
+  if (window.matchMedia('(min-width:1024px)').matches) {
+    if (STORE.get('nz_sb', true) === false) document.documentElement.classList.add('sb-closed');
+  }
+  syncBurger();
+
   window.addEventListener('scroll', () => {
     $('#toTop')?.classList.toggle('show', scrollY > 500);
   }, { passive: true });
   $('#toTop')?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  // عند فتح الصفحة بمرساة (#whatIslam مثلاً في ديوان الموقع)
+  if (!IS_HOME() && location.hash) {
+    const target = document.querySelector(location.hash);
+    if (target) setSmooth(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }
 }
+
+function setSmooth(fn) { requestAnimationFrame(fn); }
 
 /* ---------- خط / سمة ---------- */
 function bindUI() {
@@ -524,14 +676,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const dark = STORE.get('nz_dark', true);
   document.documentElement.classList.toggle('dark', dark);
   document.body.classList.toggle('dark', dark);
-  render();
+  buildSidebar(); // القائمة الجانبية المشتركة قبل كل شيء (تختلف روابطها حسب الصفحة)
   bindCounters();
   bindTasbih();
   renderTasbih();
   bindNav();
   bindUI();
   refreshUserUI();
-  openView(VIEW_TITLES[location.hash.slice(1)] ? location.hash.slice(1) : 'dashboard', false);
-  // تحديث الحسنات كل دقيقة (لتغيير اليوم)
-  setInterval(renderDashboard, 60 * 1000);
+  render(); // (بطاقات الأذكار — الرئيسية فقط حيث توجد حاوياتها)
+  if (IS_HOME()) openView(VIEW_TITLES[location.hash.slice(1)] ? location.hash.slice(1) : 'dashboard', false);
+  // تحديث لوحة الإنجاز كل دقيقة (تغيير اليوم)
+  setInterval(() => { if (IS_HOME()) renderDashboard(); }, 60 * 1000);
 });

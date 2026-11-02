@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <!--
-  ﴿ نُورُ الذِّكْر ﴾ — v4 بإطار Tailwind
+  ﴿ نُورُ الذِّكْر ﴾ — إطار Tailwind
   سجل التغييرات:
-  • 2026-11-02 [v4] إعادة تصميم كاملة: قائمة جانبية ثابتة (درج على الجوال)، حركات وانتقالات،
-    حسابات مستخدمين محلية localStorage (اسم مستخدم + كلمة سر)، عدّاد حسنات (+10 لكل تسبيحة)،
-    لوحة صدارة محلية على الجهاز، لوحة إنجاز بمخطط أسبوعي وسلسلة أيام.
-  • البيانات النصية للأذكار في azkar-data.js. إصدارات v1..v3 محفوظة في legacy.css و_snapshots.
+  • 2026-11-02 [v4.1] قائمة جانبية مشتركة تُبنى في app.js لكل الصفحات (تُفتح/تُغلق بزر ☰ في كل
+    الأحجام، وتتفاعل مع الوضع النهاري/الليلي وخلفية جديدة لكل وضع)، هيرو معاد ترتيبه بلا تداخل،
+    مسبحة مطورة (شعوية اللمس + اهتزاز + نسبة تقدم + وميض ذهبي عند الاكتمال).
+  • 2026-11-02 [v4] إعادة تصميم كاملة: قائمة جانبية + حسابات محلية + حسنات + صدارة.
+  • البيانات النصية للأذكار في azkar-data.js. إصدارات v1..v3 في legacy.css و_snapshots.
 -->
 <html lang="ar" dir="rtl" class="dark">
 <head>
@@ -38,254 +39,199 @@
 
 <body class="font-body bg-stone-50 dark:bg-[#0c1511] text-stone-800 dark:text-stone-200 transition-colors">
 
-<!-- ============ القائمة الجانبية (يمين على الحاسوب، درج على الجوال) ============ -->
-<div id="sideBackdrop" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[90] lg:hidden"></div>
+<div class="app-main app-margin min-h-screen">
 
-<aside id="sidebar" class="fixed inset-y-0 right-0 w-72 z-[100] translate-x-full lg:translate-x-0 transition-transform duration-300
-      bg-gradient-to-b from-brand-dark via-[#0e4636] to-brand-mid pattern-dots text-white shadow-2xl flex flex-col">
-
-  <!-- الشعار -->
-  <div class="p-5 border-b border-white/10 flex items-center gap-3">
-    <span class="w-11 h-11 rounded-2xl bg-gradient-to-br from-brand-gold to-amber-600 grid place-items-center text-xl text-emerald-950 shadow-lg shadow-black/30">☾</span>
-    <div>
-      <div class="font-head text-xl font-bold shimmer-gold">نُورُ الذِّكْر</div>
-      <div class="text-[10px] text-emerald-200/70">﴿أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ﴾</div>
-    </div>
-    <button id="sideClose" class="lg:hidden ms-auto w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 transition-colors" aria-label="إغلاق القائمة">✕</button>
-  </div>
-
-  <!-- بطاقة المستخدم -->
-  <div id="userChip" class="px-4 pt-4"></div>
-
-  <!-- التنقل -->
-  <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-    <p class="text-[10px] font-bold text-emerald-300/60 px-3 mb-2 tracking-wider">الرئيسية</p>
-    <a href="#" data-view="dashboard" class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-emerald-100/90 hover:bg-white/10 transition-all duration-200 border border-transparent">
-      <span class="text-lg">📊</span> لوحة إنجازك
-    </a>
-
-    <p class="text-[10px] font-bold text-emerald-300/60 px-3 mt-4 mb-2 tracking-wider">الأذكار</p>
-    <a href="#" data-view="morning" class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-emerald-100/90 hover:bg-white/10 transition-all duration-200 border border-transparent">
-      <span class="text-lg">🌅</span> أذكار الصباح <span id="countMorning" class="ms-auto text-[10px] bg-white/10 rounded-full px-2 py-0.5"></span>
-    </a>
-    <a href="#" data-view="evening" class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-emerald-100/90 hover:bg-white/10 transition-all duration-200 border border-transparent">
-      <span class="text-lg">🌆</span> أذكار المساء <span id="countEvening" class="ms-auto text-[10px] bg-white/10 rounded-full px-2 py-0.5"></span>
-    </a>
-    <a href="#" data-view="sleep" class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-emerald-100/90 hover:bg-white/10 transition-all duration-200 border border-transparent">
-      <span class="text-lg">🌙</span> أذكار النوم <span id="countSleep" class="ms-auto text-[10px] bg-white/10 rounded-full px-2 py-0.5"></span>
-    </a>
-    <a href="#" data-view="prayer" class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-emerald-100/90 hover:bg-white/10 transition-all duration-200 border border-transparent">
-      <span class="text-lg">🕌</span> بعد الصلاة <span id="countPrayer" class="ms-auto text-[10px] bg-white/10 rounded-full px-2 py-0.5"></span>
-    </a>
-    <a href="#" data-view="duas" class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-emerald-100/90 hover:bg-white/10 transition-all duration-200 border border-transparent">
-      <span class="text-lg">🤲</span> أدعية مأثورة <span id="countDuas" class="ms-auto text-[10px] bg-white/10 rounded-full px-2 py-0.5"></span>
-    </a>
-
-    <p class="text-[10px] font-bold text-emerald-300/60 px-3 mt-4 mb-2 tracking-wider">أدوات ومسابقات</p>
-    <a href="#" data-view="tasbih" class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-emerald-100/90 hover:bg-white/10 transition-all duration-200 border border-transparent">
-      <span class="text-lg">📿</span> المسبحة
-    </a>
-    <a href="#" data-view="leaderboard" class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-emerald-100/90 hover:bg-white/10 transition-all duration-200 border border-transparent">
-      <span class="text-lg">🏆</span> لوحة الصدارة
-    </a>
-    <a href="#" data-view="profile" class="side-link flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-emerald-100/90 hover:bg-white/10 transition-all duration-200 border border-transparent">
-      <span class="text-lg">👤</span> حسابي
-    </a>
-
-    <a href="islam.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-emerald-100/90 hover:bg-white/10 transition-all duration-200 border border-transparent">
-      <span class="text-lg">📖</span> عن الإسلام والقرآن
-    </a>
-  </nav>
-
-  <!-- أدوات أسفل القائمة -->
-  <div class="p-4 border-t border-white/10 flex items-center gap-2">
-    <button id="themeBtn" class="flex-1 rounded-xl bg-white/10 hover:bg-white/20 py-2.5 text-sm transition-colors" aria-label="الوضع الليلي">🌙</button>
-    <button id="fontBtn" class="flex-1 rounded-xl bg-white/10 hover:bg-white/20 py-2.5 text-sm transition-colors" aria-label="حجم الخط">أ +</button>
-  </div>
-</aside>
-
-<!-- ============ المحتوى ============ -->
-<div class="lg:mr-72 min-h-screen flex flex-col">
-
-  <!-- شريط الجوال -->
-  <header class="lg:hidden fixed top-0 inset-x-0 z-[80] bg-brand-dark/95 dark:bg-[#0a120e]/95 backdrop-blur text-white px-4 py-3 flex items-center gap-3 shadow-lg">
-    <button id="menuBtn" class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-lg" aria-label="القائمة">☰</button>
-    <div class="font-head font-bold text-lg text-brand-gold">نُورُ الذِّكْر</div>
-    <span id="pageTitle" class="ms-auto text-xs text-emerald-200/80"></span>
-  </header>
-
-  <main class="flex-1 pt-16 lg:pt-0 pb-10 px-4 sm:px-8">
-
-    <!-- ====== لوحة إنجازك ====== -->
-    <section class="view-sec hidden" id="view-dashboard">
-      <!-- هيرو -->
-      <div class="arch-mask relative overflow-hidden bg-gradient-to-br from-brand-dark via-[#0e4636] to-brand-mid text-white rounded-b-[48px] -mx-4 sm:-mx-8 px-6 sm:px-12 pt-12 pb-14 mb-8">
-        <div class="absolute inset-0 pattern-dots opacity-60"></div>
-        <div class="relative max-w-3xl mx-auto text-center">
-          <p class="font-quran text-4xl sm:text-5xl mb-2 drop-shadow">﷽</p>
-          <h1 class="font-quran text-2xl sm:text-3xl text-amber-100 leading-relaxed">﴿أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ﴾</h1>
-          <p class="text-xs text-emerald-200/70 mt-2">سورة الرعد، 28</p>
-          <div id="dashUserHint" class="mt-5 inline-flex items-center gap-2 rounded-full bg-amber-400/90 text-emerald-950 text-xs font-bold px-4 py-2 shadow-lg hover:-translate-y-0.5 transition-transform cursor-pointer" onclick="openView('profile')">
+  <!-- ====== لوحة إنجازك ====== -->
+  <section class="view-sec hidden" id="view-dashboard">
+    <!-- هيرو -->
+    <div class="px-4 sm:px-8 pt-8">
+      <div class="relative overflow-hidden rounded-[36px] max-w-6xl mx-auto bg-gradient-to-br from-brand-dark via-[#0e4636] to-brand-mid text-white px-6 sm:px-12 py-10 sm:py-14 text-center shadow-xl">
+        <div class="absolute inset-0 pattern-dots opacity-50"></div>
+        <div class="relative max-w-2xl mx-auto flex flex-col items-center gap-4">
+          <p class="font-quran text-3xl sm:text-4xl leading-[2.4] pt-3">﷽</p>
+          <h1 class="font-quran text-xl sm:text-3xl text-amber-100 leading-[2.2] px-2">﴿أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ﴾</h1>
+          <span class="text-[11px] text-emerald-200/70 bg-white/5 border border-white/10 rounded-full px-3 py-1">سورة الرعد، 28</span>
+          <button class="js-goto mt-1 inline-flex items-center gap-2 rounded-full bg-amber-400 text-emerald-950 text-xs font-extrabold px-5 py-2.5 shadow-lg hover:-translate-y-0.5 hover:bg-amber-300 transition-all" data-view="profile">
             🔐 سجّل دخولك ليُسجَّل إنجازك وتُحتسب حسناتك
-          </div>
+          </button>
         </div>
       </div>
+    </div>
 
-      <!-- بطاقات الأرقام -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto mt-10">
-        <div class="card-in rounded-3xl bg-white dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800/60 shadow-sm p-5 hover:shadow-md hover:-translate-y-1 transition-all">
-          <div class="flex items-center gap-2 text-xs font-bold text-stone-500 dark:text-stone-400 mb-2">💰 حَسَناتك</div>
-          <div id="dashHan" class="font-head text-4xl font-bold text-amber-500 dark:text-brand-gold">0</div>
-          <div class="text-[10px] text-stone-400 mt-1">كل تسبيحة ≈ ١٠ حسنات</div>
-        </div>
-        <div class="card-in rounded-3xl bg-white dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800/60 shadow-sm p-5 hover:shadow-md hover:-translate-y-1 transition-all" style="animation-delay:.08s">
-          <div class="flex items-center gap-2 text-xs font-bold text-stone-500 dark:text-stone-400 mb-2">🌸 تسبيحك اليوم</div>
-          <div id="dashToday" class="font-head text-4xl font-bold text-emerald-600 dark:text-amber-300">0</div>
-          <div class="text-[10px] text-stone-400 mt-1">بسم الله، خير اليوم = بادئه</div>
-        </div>
-        <div class="card-in rounded-3xl bg-white dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800/60 shadow-sm p-5 hover:shadow-md hover:-translate-y-1 transition-all" style="animation-delay:.16s">
-          <div class="flex items-center gap-2 text-xs font-bold text-stone-500 dark:text-stone-400 mb-2">🔥 سلسلة أيامك</div>
-          <div id="dashStreak" class="font-head text-4xl font-bold text-emerald-600 dark:text-amber-300">0</div>
-          <div class="text-[10px] text-stone-400 mt-1">أيام متتابعة بلا انقطاع</div>
-        </div>
-        <div class="card-in rounded-3xl bg-white dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800/60 shadow-sm p-5 hover:shadow-md hover:-translate-y-1 transition-all" style="animation-delay:.24s">
-          <div class="flex items-center gap-2 text-xs font-bold text-stone-500 dark:text-stone-400 mb-2">✅ أذكار مكتملة</div>
-          <div id="dashDone" class="font-head text-4xl font-bold text-emerald-600 dark:text-amber-300">0</div>
-          <div class="text-[10px] text-stone-400 mt-1">ذكراً أتممته بالكامل</div>
-        </div>
+    <!-- بطاقات الأرقام -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto px-4 sm:px-8 mt-8">
+      <div class="card-in rounded-3xl bg-white dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800/60 shadow-sm p-5 hover:shadow-md hover:-translate-y-1 transition-all">
+        <div class="text-xs font-bold text-stone-500 dark:text-stone-400 mb-2">💰 حَسَناتك</div>
+        <div id="dashHan" class="font-head text-4xl font-bold text-amber-500 dark:text-brand-gold">0</div>
+        <div class="text-[10px] text-stone-400 mt-1">كل تسبيحة ≈ ١٠ حسنات</div>
       </div>
+      <div class="card-in rounded-3xl bg-white dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800/60 shadow-sm p-5 hover:shadow-md hover:-translate-y-1 transition-all" style="animation-delay:.08s">
+        <div class="text-xs font-bold text-stone-500 dark:text-stone-400 mb-2">🌸 تسبيحك اليوم</div>
+        <div id="dashToday" class="font-head text-4xl font-bold text-emerald-600 dark:text-amber-300">0</div>
+        <div class="text-[10px] text-stone-400 mt-1">بسم الله، خير اليوم = بادئه</div>
+      </div>
+      <div class="card-in rounded-3xl bg-white dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800/60 shadow-sm p-5 hover:shadow-md hover:-translate-y-1 transition-all" style="animation-delay:.16s">
+        <div class="text-xs font-bold text-stone-500 dark:text-stone-400 mb-2">🔥 سلسلة أيامك</div>
+        <div id="dashStreak" class="font-head text-4xl font-bold text-emerald-600 dark:text-amber-300">0</div>
+        <div class="text-[10px] text-stone-400 mt-1">أيام متتابعة بلا انقطاع</div>
+      </div>
+      <div class="card-in rounded-3xl bg-white dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800/60 shadow-sm p-5 hover:shadow-md hover:-translate-y-1 transition-all" style="animation-delay:.24s">
+        <div class="text-xs font-bold text-stone-500 dark:text-stone-400 mb-2">✅ أذكار مكتملة</div>
+        <div id="dashDone" class="font-head text-4xl font-bold text-emerald-600 dark:text-amber-300">0</div>
+        <div class="text-[10px] text-stone-400 mt-1">ذكراً أتممته بالكامل</div>
+      </div>
+    </div>
 
-      <!-- مخطط الأسبوع -->
-      <div class="max-w-6xl mx-auto mt-8 rounded-3xl bg-white dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800/60 shadow-sm p-6">
-        <div class="flex items-center justify-between mb-5">
+    <!-- مخطط الأسبوع -->
+    <div class="max-w-6xl mx-auto px-4 sm:px-8 mt-8">
+      <div class="rounded-3xl bg-white dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800/60 shadow-sm p-6">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
           <h3 class="font-head font-bold">📈 تسبيحك خلال الأسبوع</h3>
           <button class="js-goto rounded-full bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold px-4 py-2 transition-colors" data-view="morning">إلى الأذكار ↗</button>
         </div>
         <div id="weekBars" class="flex gap-3 items-end"></div>
       </div>
+    </div>
 
-      <!-- روابط سريعة -->
-      <div class="max-w-6xl mx-auto mt-8 grid sm:grid-cols-3 gap-4">
-        <button class="js-goto group text-right rounded-3xl bg-gradient-to-br from-amber-400 to-amber-500 text-emerald-950 p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all" data-view="tasbih">
-          <div class="text-3xl mb-2 group-hover:rotate-12 transition-transform duration-300">📿</div>
-          <div class="font-head font-bold text-lg">المسبحة الإلكترونية</div>
-          <div class="text-xs opacity-70 mt-1">سبّح وعدّ به</div>
-        </button>
-        <button class="js-goto group text-right rounded-3xl bg-gradient-to-br from-emerald-700 to-emerald-600 text-white p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all" data-view="leaderboard">
-          <div class="text-3xl mb-2 group-hover:-translate-y-1 transition-transform duration-300">🏆</div>
-          <div class="font-head font-bold text-lg">لوحة الصدارة</div>
-          <div class="text-xs opacity-70 mt-1">قارن إنجاز أسرتك</div>
-        </button>
-        <button class="js-goto group text-right rounded-3xl bg-gradient-to-br from-brand-mid to-brand-dark text-amber-200 p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all border border-white/10" data-view="profile">
-          <div class="text-3xl mb-2 group-hover:scale-110 transition-transform duration-300">👤</div>
-          <div class="font-head font-bold text-lg">حسابي</div>
-          <div class="text-xs opacity-70 mt-1">دخل أو أنشئ حسابك</div>
-        </button>
+    <!-- روابط سريعة -->
+    <div class="max-w-6xl mx-auto px-4 sm:px-8 mt-8 grid sm:grid-cols-3 gap-4">
+      <button class="js-goto group text-right rounded-3xl bg-gradient-to-br from-amber-400 to-amber-500 text-emerald-950 p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all" data-view="tasbih">
+        <div class="text-3xl mb-2 group-hover:rotate-12 transition-transform duration-300">📿</div>
+        <div class="font-head font-bold text-lg">المسبحة الإلكترونية</div>
+        <div class="text-xs opacity-70 mt-1">سبّح وعدّ به</div>
+      </button>
+      <button class="js-goto group text-right rounded-3xl bg-gradient-to-br from-emerald-700 to-emerald-600 text-white p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all" data-view="leaderboard">
+        <div class="text-3xl mb-2 group-hover:-translate-y-1 transition-transform duration-300">🏆</div>
+        <div class="font-head font-bold text-lg">لوحة الصدارة</div>
+        <div class="text-xs opacity-70 mt-1">قارن إنجاز أسرتك</div>
+      </button>
+      <button class="js-goto group text-right rounded-3xl bg-gradient-to-br from-brand-mid to-brand-dark text-amber-200 p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all border border-white/10" data-view="profile">
+        <div class="text-3xl mb-2 group-hover:scale-110 transition-transform duration-300">👤</div>
+        <div class="font-head font-bold text-lg">حسابي</div>
+        <div class="text-xs opacity-70 mt-1">ادخل أو أنشئ حسابك</div>
+      </button>
+    </div>
+
+    <div class="h-10"></div>
+  </section>
+
+  <!-- ====== الأقسام ====== -->
+  <section class="view-sec hidden" id="view-morning">
+    <header class="flex items-center gap-4 mb-6 mt-8 max-w-4xl mx-auto px-4 sm:px-0">
+      <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 grid place-items-center text-2xl shadow-lg shadow-amber-500/20 shrink-0">🌅</div>
+      <div class="flex-1 min-w-0">
+        <h2 class="font-head text-2xl font-bold text-emerald-900 dark:text-brand-gold">أذكار الصباح</h2>
+        <p class="text-xs text-stone-500 dark:text-stone-400">تورد بعد الفجر حتى طلوع الشمس</p>
       </div>
-    </section>
+    </header>
+    <div class="cards grid gap-4 max-w-4xl mx-auto px-4 sm:px-0" id="cardsMorning"></div>
+  </section>
 
-    <!-- ====== الأقسام ====== -->
-    <section class="view-sec hidden" id="view-morning">
-      <header class="flex items-center gap-4 mb-6 mt-8 max-w-4xl mx-auto">
-        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 grid place-items-center text-2xl shadow-lg shadow-amber-500/20 shrink-0">🌅</div>
-        <div class="flex-1">
-          <h2 class="font-head text-2xl font-bold text-emerald-900 dark:text-brand-gold">أذكار الصباح</h2>
-          <p class="text-xs text-stone-500 dark:text-stone-400">تورد بعد الفجر حتى طلوع الشمس</p>
-        </div>
-      </header>
-      <div class="cards grid gap-4 max-w-4xl mx-auto" id="cardsMorning"></div>
-    </section>
+  <section class="view-sec hidden" id="view-evening">
+    <header class="flex items-center gap-4 mb-6 mt-8 max-w-4xl mx-auto px-4 sm:px-0">
+      <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-400 to-indigo-700 grid place-items-center text-2xl shadow-lg shadow-indigo-500/20 shrink-0">🌆</div>
+      <div class="flex-1 min-w-0">
+        <h2 class="font-head text-2xl font-bold text-emerald-900 dark:text-brand-gold">أذكار المساء</h2>
+        <p class="text-xs text-stone-500 dark:text-stone-400">تورد بعد العصر حتى غروب الشمس</p>
+      </div>
+    </header>
+    <div class="cards grid gap-4 max-w-4xl mx-auto px-4 sm:px-0" id="cardsEvening"></div>
+  </section>
 
-    <section class="view-sec hidden" id="view-evening">
-      <header class="flex items-center gap-4 mb-6 mt-8 max-w-4xl mx-auto">
-        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-400 to-indigo-700 grid place-items-center text-2xl shadow-lg shadow-indigo-500/20 shrink-0">🌆</div>
-        <div class="flex-1">
-          <h2 class="font-head text-2xl font-bold text-emerald-900 dark:text-brand-gold">أذكار المساء</h2>
-          <p class="text-xs text-stone-500 dark:text-stone-400">تورد بعد العصر حتى غروب الشمس</p>
-        </div>
-      </header>
-      <div class="cards grid gap-4 max-w-4xl mx-auto" id="cardsEvening"></div>
-    </section>
+  <section class="view-sec hidden" id="view-sleep">
+    <header class="flex items-center gap-4 mb-6 mt-8 max-w-4xl mx-auto px-4 sm:px-0">
+      <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-500 to-blue-800 grid place-items-center text-2xl shadow-lg shadow-sky-500/20 shrink-0">🌙</div>
+      <div class="flex-1 min-w-0">
+        <h2 class="font-head text-2xl font-bold text-emerald-900 dark:text-brand-gold">أذكار النوم</h2>
+        <p class="text-xs text-stone-500 dark:text-stone-400">ما يُقال وقت النوم</p>
+      </div>
+    </header>
+    <div class="cards grid gap-4 max-w-4xl mx-auto px-4 sm:px-0" id="cardsSleep"></div>
+  </section>
 
-    <section class="view-sec hidden" id="view-sleep">
-      <header class="flex items-center gap-4 mb-6 mt-8 max-w-4xl mx-auto">
-        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-500 to-blue-800 grid place-items-center text-2xl shadow-lg shadow-sky-500/20 shrink-0">🌙</div>
-        <div class="flex-1">
-          <h2 class="font-head text-2xl font-bold text-emerald-900 dark:text-brand-gold">أذكار النوم</h2>
-          <p class="text-xs text-stone-500 dark:text-stone-400">ما يقال أنتَ إلى فراشك</p>
-        </div>
-      </header>
-      <div class="cards grid gap-4 max-w-4xl mx-auto" id="cardsSleep"></div>
-    </section>
+  <section class="view-sec hidden" id="view-prayer">
+    <header class="flex items-center gap-4 mb-6 mt-8 max-w-4xl mx-auto px-4 sm:px-0">
+      <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-800 grid place-items-center text-2xl shadow-lg shadow-emerald-500/20 shrink-0">🕌</div>
+      <div class="flex-1 min-w-0">
+        <h2 class="font-head text-2xl font-bold text-emerald-900 dark:text-brand-gold">الذكر بعد الصلاة</h2>
+        <p class="text-xs text-stone-500 dark:text-stone-400">التسبيح بعد كل صلاة مكتوبة</p>
+      </div>
+    </header>
+    <div class="cards grid gap-4 max-w-4xl mx-auto px-4 sm:px-0" id="cardsPrayer"></div>
+  </section>
 
-    <section class="view-sec hidden" id="view-prayer">
-      <header class="flex items-center gap-4 mb-6 mt-8 max-w-4xl mx-auto">
-        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-800 grid place-items-center text-2xl shadow-lg shadow-emerald-500/20 shrink-0">🕌</div>
-        <div class="flex-1">
-          <h2 class="font-head text-2xl font-bold text-emerald-900 dark:text-brand-gold">الذكر بعد الصلاة</h2>
-          <p class="text-xs text-stone-500 dark:text-stone-400">التسبيح بعد كل صلاة مكتوبة</p>
-        </div>
-      </header>
-      <div class="cards grid gap-4 max-w-4xl mx-auto" id="cardsPrayer"></div>
-    </section>
+  <section class="view-sec hidden" id="view-duas">
+    <header class="flex items-center gap-4 mb-6 mt-8 max-w-4xl mx-auto px-4 sm:px-0">
+      <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-400 to-teal-700 grid place-items-center text-2xl shadow-lg shadow-teal-500/20 shrink-0">🤲</div>
+      <div class="flex-1 min-w-0">
+        <h2 class="font-head text-2xl font-bold text-emerald-900 dark:text-brand-gold">أدعية مأثورة</h2>
+        <p class="text-xs text-stone-500 dark:text-stone-400">من الصحيحين والسنن</p>
+      </div>
+    </header>
+    <div class="cards grid gap-4 max-w-4xl mx-auto px-4 sm:px-0" id="cardsDuas"></div>
+  </section>
 
-    <section class="view-sec hidden" id="view-duas">
-      <header class="flex items-center gap-4 mb-6 mt-8 max-w-4xl mx-auto">
-        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-400 to-teal-700 grid place-items-center text-2xl shadow-lg shadow-teal-500/20 shrink-0">🤲</div>
-        <div class="flex-1">
-          <h2 class="font-head text-2xl font-bold text-emerald-900 dark:text-brand-gold">أدعية مأثورة</h2>
-          <p class="text-xs text-stone-500 dark:text-stone-400">من الصحيحين والسنن</p>
-        </div>
-      </header>
-      <div class="cards grid gap-4 max-w-4xl mx-auto" id="cardsDuas"></div>
-    </section>
+  <!-- ====== المسبحة ====== -->
+  <section class="view-sec hidden" id="view-tasbih">
+    <header class="text-center mt-10 mb-8 px-4">
+      <div class="text-4xl mb-2 ring-pulse inline-block">📿</div>
+      <h2 class="font-head text-2xl font-bold text-emerald-900 dark:text-brand-gold">المسبحة الإلكترونية</h2>
+      <p class="text-xs text-stone-500 dark:text-stone-400 mt-1">اضغط الدائرة بعد كل تسبيحة — أو المسافة (Space) من لوحة المفاتيح</p>
+    </header>
 
-    <!-- ====== المسبحة ====== -->
-    <section class="view-sec hidden" id="view-tasbih">
-      <header class="text-center mt-10 mb-6">
-        <div class="text-4xl mb-2 ring-pulse inline-block">📿</div>
-        <h2 class="font-head text-2xl font-bold text-emerald-900 dark:text-brand-gold">المسبحة الإلكترونية</h2>
-        <p class="text-xs text-stone-500 dark:text-stone-400">اضغط الدائرة بعد كل تسبيحة</p>
-      </header>
+    <div class="max-w-md mx-auto px-4">
+      <div class="rounded-[32px] bg-white dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800/60 shadow-md p-6">
 
-      <div class="max-w-md mx-auto rounded-3xl bg-white dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800/60 shadow-md p-6">
-        <div id="phraseRow" class="flex gap-2 flex-wrap justify-center mb-4"></div>
-        <p id="tasbihPhrase" class="font-quran text-2xl text-center text-emerald-900 dark:text-brand-gold mb-5 min-h-[2.4rem]"></p>
+        <!-- جمل التسبيح -->
+        <div id="phraseRow" class="flex gap-2 flex-wrap justify-center mb-5"></div>
 
-        <button id="tasbihBtn" class="relative mx-auto grid place-items-center rounded-full transition-transform active:scale-95 tap-highlight" aria-label="اضغط للتسبيح">
-          <svg class="tasbih-svg" width="190" height="190" viewBox="0 0 120 120">
+        <!-- الجملة الحالية -->
+        <p id="tasbihPhrase" class="font-quran text-2xl text-center text-emerald-900 dark:text-brand-gold mb-6 min-h-[2.6rem]"></p>
+
+        <!-- الدائرة -->
+        <button id="tasbihBtn" class="relative w-[232px] h-[232px] mx-auto grid place-items-center rounded-full select-none outline-none active:scale-[.96] transition-transform duration-150 shadow-xl shadow-emerald-900/25" aria-label="اضغط للتسبيح">
+          <svg class="tasbih-svg absolute inset-0 m-auto" width="232" height="232" viewBox="0 0 120 120">
             <defs><linearGradient id="goldGrad" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%" stop-color="#d4af37"/><stop offset="100%" stop-color="#1b7a5a"/>
             </linearGradient></defs>
             <circle class="tasbih-track" cx="60" cy="60" r="54"/>
             <circle class="tasbih-prog" id="tasbihRing" cx="60" cy="60" r="54"/>
           </svg>
-          <span class="absolute inset-0 m-auto w-[78%] h-[78%] rounded-full bg-gradient-to-br from-emerald-800 to-brand-dark shadow-inner grid place-items-center font-head text-5xl font-bold text-brand-gold" id="tasbihCount">0</span>
+          <span class="absolute inset-0 m-auto w-[72%] h-[72%] rounded-full bg-gradient-to-br from-emerald-700 to-brand-dark shadow-inner grid place-items-center">
+            <span id="tasbihCount" class="font-head text-6xl font-bold text-brand-gold" role="status" aria-live="polite">0</span>
+          </span>
         </button>
 
-        <div class="flex items-center justify-center gap-2 mt-5 flex-wrap" id="targetRow">
+        <!-- نسبة التقدم -->
+        <p id="tasbihPct" class="text-center text-xs font-bold text-stone-500 dark:text-stone-400 mt-4"></p>
+
+        <!-- الهدف -->
+        <div class="flex items-center justify-center gap-2 mt-5 flex-wrap">
           <span class="text-xs font-bold text-stone-500">الهدف:</span>
-          <button class="target-chip rounded-xl bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800 px-4 py-1.5 font-bold text-sm hover:border-emerald-400 transition-colors" data-target="33">33</button>
-          <button class="target-chip rounded-xl bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800 px-4 py-1.5 font-bold text-sm hover:border-emerald-400 transition-colors" data-target="99">99</button>
-          <button class="target-chip rounded-xl bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800 px-4 py-1.5 font-bold text-sm hover:border-emerald-400 transition-colors" data-target="100">100</button>
-          <button class="target-chip rounded-xl bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800 px-4 py-1.5 font-bold text-sm hover:border-emerald-400 transition-colors" data-target="0">بحسبِ</button>
+          <button class="target-chip rounded-xl bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800 px-4 py-1.5 font-bold text-sm hover:border-emerald-400 transition-all" data-target="33">33</button>
+          <button class="target-chip rounded-xl bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800 px-4 py-1.5 font-bold text-sm hover:border-emerald-400 transition-all" data-target="99">99</button>
+          <button class="target-chip rounded-xl bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800 px-4 py-1.5 font-bold text-sm hover:border-emerald-400 transition-all" data-target="100">100</button>
+          <button class="target-chip rounded-xl bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800 px-4 py-1.5 font-bold text-sm hover:border-emerald-400 transition-all" data-target="0">بحسبِ</button>
         </div>
 
-        <div class="flex items-center justify-center gap-3 mt-5 pb-1">
-          <button id="tasbihReset" class="text-xs font-bold text-stone-500 hover:text-rose-500 transition-colors rounded-full border border-dashed border-stone-300 dark:border-emerald-800 px-4 py-1.5">↺ تصفير</button>
+        <!-- تصفير والدورات -->
+        <div class="flex items-center justify-center gap-3 mt-6 pb-1">
+          <button id="tasbihReset" class="text-xs font-bold text-stone-500 hover:text-rose-500 transition-colors rounded-full border border-dashed border-stone-300 dark:border-emerald-800 px-5 py-2">↺ تصفير</button>
           <span class="text-xs text-stone-500 dark:text-stone-400">الدورات: <b id="tasbihRounds" class="text-emerald-600 dark:text-amber-300">0</b></span>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- ====== لوحة الصدارة ====== -->
-    <section class="view-sec hidden" id="view-leaderboard">
-      <header class="text-center mt-10 mb-6">
-        <div class="text-4xl mb-2 inline-block">🏆</div>
-        <h2 class="font-head text-2xl font-bold text-emerald-900 dark:text-brand-gold">لوحة الصدارة</h2>
-        <p class="text-xs text-stone-500 dark:text-stone-400 max-w-md mx-auto">ترتيب حساباتك المحلية على هذا الجهاز حسب الحسنات — كل فرد من الأسرة أنشئ له حساباً من «حسابي» ثم قارنوا 🌟</p>
-      </header>
-      <div class="max-w-2xl mx-auto rounded-3xl bg-white dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800/60 shadow-sm overflow-hidden">
+  <!-- ====== لوحة الصدارة ====== -->
+  <section class="view-sec hidden" id="view-leaderboard">
+    <header class="text-center mt-10 mb-6 px-4">
+      <div class="text-4xl mb-2 inline-block">🏆</div>
+      <h2 class="font-head text-2xl font-bold text-emerald-900 dark:text-brand-gold">لوحة الصدارة</h2>
+      <p class="text-xs text-stone-500 dark:text-stone-400 max-w-md mx-auto mt-1">ترتيب حساباتك المحلية على هذا الجهاز حسب الحسنات — كل فرد من الأسرة أنشئ له حساباً من «حسابي» ثم قارنوا 🌟</p>
+    </header>
+    <div class="max-w-2xl mx-auto px-4">
+      <div class="rounded-3xl bg-white dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800/60 shadow-sm overflow-hidden">
         <table class="w-full text-right">
           <thead class="bg-emerald-800 dark:bg-emerald-900/80 text-emerald-100 text-xs">
             <tr>
@@ -299,24 +245,24 @@
           <tbody id="boardBody"></tbody>
         </table>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- ====== حسابي ====== -->
-    <section class="view-sec hidden" id="view-profile">
-      <header class="text-center mt-10 mb-6">
-        <div class="text-4xl mb-2 inline-block">🔐</div>
-        <h2 class="font-head text-2xl font-bold text-emerald-900 dark:text-brand-gold">حسابي</h2>
-        <p class="text-xs text-stone-500 dark:text-stone-400">قاعدة بيانات محلية على جهازك (localStorage)</p>
-      </header>
-      <div id="profileBody"></div>
-    </section>
+  <!-- ====== حسابي ====== -->
+  <section class="view-sec hidden" id="view-profile">
+    <header class="text-center mt-10 mb-6 px-4">
+      <div class="text-4xl mb-2 inline-block">🔐</div>
+      <h2 class="font-head text-2xl font-bold text-emerald-900 dark:text-brand-gold">حسابي</h2>
+      <p class="text-xs text-stone-500 dark:text-stone-400 mt-1">قاعدة بيانات محلية على جهازك (localStorage)</p>
+    </header>
+    <div id="profileBody" class="px-4"></div>
+  </section>
 
-  </main>
+</div><!-- /app-main -->
 
-  <footer class="py-8 text-center text-xs text-stone-400 dark:text-stone-500">
-    ﴿فَاذْكُرُونِي أَذْكُرْكُمْ﴾ — البقرة 152 • أحاديث صحيحة من الرحيق المكتوم والسنن
-  </footer>
-</div>
+<footer class="app-margin py-10 text-center text-xs text-stone-400 dark:text-stone-500">
+  ﴿فَاذْكُرُونِي أَذْكُرْكُمْ﴾ — البقرة 152 • أحاديث صحيحة من الرحيق المكتوم والسنن
+</footer>
 
 <button id="toTop" class="to-top" aria-label="العودة للأعلى">❯</button>
 

@@ -52,6 +52,140 @@ body { font-family: 'Cairo', sans-serif; transition: background-color .3s; }
 /* هيرو زخرفة القوس */
 .arch-mask { border-radius: 0 0 50% 50% / 0 0 22% 22%; }
 
+/* ================= Sidebar (v4.1) ================= */
+/* تُبنى القائمة في app.js وتعمل على كل الصفحات:
+   - الوضع الليلي: درجات زمرد داكنة زجاجية مع توهج ذهبي
+   - الوضع النهاري: عاجي فاتح مع نقش خفيف وحدود ذهبية
+   - تُفتح وتُغلَق بزر الثلاث خطوط (☰) في كل الحجمات، وتُحفظ حالة على الحاسوب */
+#sidebar {
+  width: 18rem; max-width: 84vw;
+  background: linear-gradient(180deg, #0b3d2e 0%, #0e4636 55%, #12523f 100%);
+}
+html.dark #sidebar {
+  background: linear-gradient(180deg, #071f18 0%, #0b3d2e 60%, #0e4636 100%);
+  box-shadow: 0 0 60px rgba(212, 175, 55, .10) inset, -10px 0 40px rgba(0,0,0,.35);
+}
+html:not(.dark) #sidebar {
+  background: linear-gradient(180deg, #fbf7ec 0%, #f3efe2 55%, #eef4ec 100%);
+  box-shadow: -8px 0 34px rgba(11, 61, 46, .08);
+}
+html:not(.dark) #sidebar .side-text-main { color: #0b3d2e; }
+html:not(.dark) #sidebar .side-text-sub { color: #5b6f63; }
+#sidebar::after { /* توهج زخرفي أعلى القائمة */
+  content: ''; position: absolute; inset-inline-start: 0; top: -80px;
+  width: 100%; height: 180px; pointer-events: none;
+  background: radial-gradient(ellipse at 30% 0%, rgba(212,175,55,.18), transparent 65%);
+}
+
+/* سلوك إظهار/إخفاء بمثيل واحد: مخفية يميناً افتراضياً على الجوال */
+@media (max-width: 1023.98px) {
+  #sidebar { transform: translateX(105%); }
+  html.sb-open #sidebar { transform: none; }
+}
+@media (min-width: 1024px) {
+  .app-margin { margin-right: 18rem; transition: margin .35s cubic-bezier(.22,1,.36,1); }
+  html.sb-closed .app-margin { margin-right: 0; }
+  html.sb-closed #sidebar { transform: translateX(105%); }
+}
+#sidebar { transition: transform .35s cubic-bezier(.22,1,.36,1); }
+
+/* ستارة الجوال */
+.side-backdrop {
+  position: fixed; inset: 0; z-index: 90;
+  background: rgba(4, 24, 18, .55);
+  backdrop-filter: blur(4px);
+  opacity: 0; visibility: hidden; transition: opacity .3s;
+}
+html.sb-open .side-backdrop { opacity: 1; visibility: visible; }
+@media (min-width: 1024px) { .side-backdrop { display: none; } }
+
+/* شريط علوي للكل */
+.topbar2 {
+  position: fixed; top: 0; inset-inline: 0; z-index: 80; height: 64px;
+  display: flex; align-items: center; gap: .75rem; padding-inline: 1rem;
+  background: color-mix(in srgb, #ffffff 88%, transparent);
+  border-bottom: 1px solid rgba(11,61,46,.08);
+  backdrop-filter: blur(10px);
+}
+html.dark .topbar2 {
+  background: color-mix(in srgb, #0c1511 88%, transparent);
+  border-bottom-color: rgba(212,175,55,.14);
+}
+.app-main { padding-top: 76px; }
+
+/* زر الهمبرغر */
+.burger-btn {
+  width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center;
+  font-size: 19px; line-height: 1; transition: all .25s;
+  background: rgba(27, 122, 90, .10); color: #0b3d2e;
+  border: 1px solid rgba(27, 122, 90, .18);
+}
+.burger-btn:hover { transform: translateY(-1px); background: rgba(27,122,90,.16); }
+html.dark .burger-btn { background: rgba(212,175,55,.10); color: #d4af37; border-color: rgba(212,175,55,.22); }
+
+/* عناصر داخل القائمة الجانبية (مستقلة عن الوضع) */
+#sidebar .side-text-sub { color: #6c8377; }
+html.dark #sidebar .side-text-sub { color: rgba(255,255,255,.55); }
+#sidebar .side-heading {
+  font-size: 10px; letter-spacing: .06em; font-weight: 800; color: #8a6d1f;
+  margin: 1.1rem 12px .45rem; opacity: .9;
+}
+html.dark #sidebar .side-heading { color: rgba(212,175,55,.65); }
+#sidebar .side-link {
+  display: flex; align-items: center; gap: .75rem; padding: .6rem 12px;
+  border-radius: 14px; font-weight: 700; font-size: .925rem; text-decoration: none;
+  color: #114a35; transition: all .2s ease;
+}
+#sidebar .side-link:hover { background: rgba(27,122,90,.08); transform: translateX(-2px); }
+#sidebar .side-link.active {
+  background: linear-gradient(270deg, rgba(27,122,90,.14), transparent 55%);
+  box-shadow: inset -3px 0 0 #d4af37; color: #0b3d2e;
+}
+html.dark #sidebar .side-link { color: rgba(255,255,255,.85); }
+html.dark #sidebar .side-link:hover { background: rgba(255,255,255,.07); }
+html.dark #sidebar .side-link.active {
+  background: linear-gradient(270deg, rgba(255,255,255,.08), transparent 55%);
+  box-shadow: inset -3px 0 0 #d4af37; color: #f2dc9a;
+}
+#sidebar .side-badge {
+  margin-inline-start: auto; font-size: 10px; padding: 2px 9px; border-radius: 99px;
+  background: rgba(11,61,46,.07); color: #43604f; font-weight: 700;
+}
+html.dark #sidebar .side-badge { background: rgba(255,255,255,.08); color: #bcd3c4; }
+#sidebar .side-divider { height: 1px; margin: .8rem 12px; background: rgba(120,110,80,.16); }
+html.dark #sidebar .side-divider { background: rgba(255,255,255,.08); }
+#sidebar .side-divider-t { border-color: rgba(120,110,80,.16); }
+html.dark #sidebar .side-divider-t { border-color: rgba(255,255,255,.08); }
+#sidebar .side-icon-btn {
+  background: rgba(11,61,46,.05); color: #2e5145;
+}
+#sidebar .side-icon-btn:hover { background: rgba(11,61,46,.10); }
+html.dark #sidebar .side-icon-btn { background: rgba(255,255,255,.07); color: #e8f1ec; }
+html.dark #sidebar .side-icon-btn:hover { background: rgba(255,255,255,.14); }
+
+/* تط/basbih feedback */
+@keyframes ripple { to { transform: scale(3.2); opacity: 0; } }
+.ripple {
+  position: absolute; border-radius: 999px; pointer-events: none;
+  background: radial-gradient(circle, rgba(255,255,255,.5) 0%, rgba(212,175,55,.35) 45%, transparent 70%);
+  width: 40px; height: 40px; transform: translate(-50%, -50%) scale(0);
+  animation: ripple .65s ease-out forwards;
+}
+@keyframes goldFlash { 0%,100% { filter: none; } 40% { filter: brightness(1.5) saturate(1.4); } }
+.gold-flash { animation: goldFlash .9s ease; }
+
+/* منع التداخل العام */
+button { touch-action: manipulation; }
+.font-quran { line-height: 2.15; }
+h1, h2, h3, .font-head { overflow-wrap: break-word; }
+
+/* ديوان الموقع (islam.html) */
+.divan-ayah {
+  font-family: 'Amiri Quran', serif; font-size: 1.45rem; line-height: 2.3;
+}
+.divan-sec { scroll-margin-top: 86px; }
+html.dark .divan-note { color: #8fa89b; }
+
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }

@@ -1,172 +1,153 @@
 <!DOCTYPE html>
 <!--
-  نور الذكر — صفحة فرعية: عن الاسلام والقران الكريم
+  ﴿ نُورُ الذِّكْر ﴾ — ديوان الموقع: عن الإسلام والقرآن الكريم
   سجل التغييرات:
-  2026-10-17 [v3] انشاء هذه الصفحة الفرعية (islam.html)
+  • 2026-11-02 [v4.1] إعادة كاملة بإطار Tailwind: تدخل ضمن نفس التصميم مع القائمة الجانبية
+    المشتركة على كل الصفحات (تفتح وتغلق عبر app.js)، وتفاعل الوضعين، وطباعة ديوانية
+    للفقرات مع فهرس تنقّل.
+  • 2026-10-17 [v3] إنشاء الصفحة (النصوص مأثورة كما هي).
 -->
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" class="dark">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="معلومات عن الاسلام وأركانه وعن القرآن الكريم، صفحة فرعية من موقع نور الذكر" />
+<meta name="description" content="ديوان الموقع: معلومات موجزة ومدققة عن الإسلام وأركانه وعن القرآن الكريم — من موقع نور الذكر" />
 <meta name="theme-color" content="#0b3d2e" />
-<title>عن الاسلام والقرآن الكريم — نور الذكر</title>
+<title>ديوان الموقع — عن الإسلام والقرآن | نُورُ الذِّكْر</title>
 <link rel="manifest" href="manifest.webmanifest" />
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-title" content="نور الذكر" />
 <link rel="stylesheet" href="fonts/fonts.css" />
-<link rel="stylesheet" href="legacy.css" />
+<link rel="stylesheet" href="styles.css" />
 <link rel="icon" href="icons/icon-192.png" sizes="192x192" />
+<script src="tailwind.js"></script>
+<script>tailwind.config = { darkMode: 'class' };</script>
 </head>
-<body>
 
-<header class="topbar">
-  <div class="topbar-inner">
-    <a class="brand" href="index.html">
-      <span class="brand-icon">☾</span>
-      <span class="brand-text">نُورُ الذِّكْر</span>
-    </a>
-    <nav class="main-nav" id="mainNav">
-      <a href="index.html" class="nav-link">الرئيسية</a>
-      <a href="index.html#morning" class="nav-link">أذكار الصباح</a>
-      <a href="index.html#evening" class="nav-link">أذكار المساء</a>
-      <a href="index.html#sleep" class="nav-link">أذكار النوم</a>
-      <a href="index.html#duas" class="nav-link">أدعية مأثورة</a>
-      <a href="index.html#tasbih" class="nav-link">المسبحة</a>
-      <a href="islam.html" class="nav-link active">عن الإسلام</a>
-    </nav>
-    <div class="top-actions">
-      <button id="fontBtn" class="icon-btn" title="حجم الخط" aria-label="حجم الخط">أ<span class="font-a">+</span></button>
-      <button id="themeBtn" class="icon-btn" title="الوضع الليلي" aria-label="الوضع الليلي">🌙</button>
-      <button id="menuBtn" class="icon-btn burger" title="القائمة" aria-label="القائمة">☰</button>
+<body class="font-body bg-stone-50 dark:bg-[#0c1511] text-stone-800 dark:text-stone-200 transition-colors">
+
+<div class="app-main app-margin pt-8">
+
+  <!-- هيرو الديوان -->
+  <div class="px-4 sm:px-8">
+    <div class="relative overflow-hidden rounded-[36px] max-w-5xl mx-auto bg-gradient-to-br from-brand-dark via-[#0e4636] to-brand-mid text-white px-6 sm:px-12 py-12 text-center shadow-xl">
+      <div class="absolute inset-0 pattern-dots opacity-50"></div>
+      <div class="relative max-w-2xl mx-auto flex flex-col items-center gap-4">
+        <span class="w-16 h-16 rounded-3xl bg-gradient-to-br from-amber-300 to-amber-600 text-emerald-950 grid place-items-center text-3xl shadow-lg">📖</span>
+        <h1 class="font-head text-3xl sm:text-4xl font-bold shimmer-gold">ديوان الموقع</h1>
+        <p class="text-sm text-emerald-100/85">عن الإسلام والقرآن الكريم — معلومات موجزة ومدقّقة</p>
+        <!-- فهرس الديوان -->
+        <nav class="flex flex-wrap justify-center gap-2 mt-3">
+          <a href="#whatIslam" class="rounded-full bg-white/10 hover:bg-white/20 border border-white/15 px-4 py-1.5 text-xs font-bold text-amber-100 transition-colors">🕌 ما هو الإسلام؟</a>
+          <a href="#quranFacts" class="rounded-full bg-white/10 hover:bg-white/20 border border-white/15 px-4 py-1.5 text-xs font-bold text-amber-100 transition-colors">📖 القرآن الكريم</a>
+          <a href="#enterIslam" class="rounded-full bg-white/10 hover:bg-white/20 border border-white/15 px-4 py-1.5 text-xs font-bold text-amber-100 transition-colors">🤲 الدخول في الإسلام</a>
+        </nav>
+      </div>
     </div>
   </div>
-  <div class="progress-bar" id="scrollProgress"></div>
-</header>
 
-<section class="hero" id="home">
-  <div class="hero-pattern" aria-hidden="true"></div>
-  <div class="hero-content">
-    <p class="hero-bismillah">﷽</p>
-    <h1 class="hero-title">عن الإسلام والقرآن الكريم</h1>
-    <p class="hero-desc">صفحة معلومات موجزة ومدققة.</p>
-  </div>
-</section>
+  <main class="max-w-3xl mx-auto px-4 sm:px-8 pb-16">
 
-<main class="container">
+    <!-- ===== ما هو الإسلام ===== -->
+    <section class="divan-sec mt-12" id="whatIslam">
+      <header class="flex items-center gap-4 mb-6">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-800 text-white grid place-items-center text-xl shadow-md shrink-0">🕌</div>
+        <div>
+          <h2 class="font-head text-2xl font-bold text-emerald-900 dark:text-brand-gold">ما هو الإسلام؟</h2>
+          <p class="text-xs text-stone-500 dark:text-stone-400">تعريفات موجزة</p>
+        </div>
+        <span class="ms-auto hidden sm:block h-px flex-1 bg-gradient-to-l from-emerald-200 dark:from-emerald-800 to-transparent"></span>
+      </header>
 
-  <section class="zikr-section active" id="whatIslam">
-    <header class="section-head">
-      <div class="section-icon">🕌</div>
-      <div>
-        <h2>ما هو الإسلام؟</h2>
-        <p>تعريفات موجزة</p>
+      <div class="grid gap-4">
+        <article class="card-in rounded-3xl bg-white dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800/60 shadow-sm p-6 hover:shadow-md hover:-translate-y-0.5 transition-all">
+          <span class="inline-block text-[11px] font-bold text-emerald-700 dark:text-amber-300 bg-emerald-50 dark:bg-emerald-900/70 rounded-full px-3 py-1 mb-3">تعريف</span>
+          <p class="text-lg leading-loose">الإسلام دين توحيدي. أهله يعتقدون أن الله واحد لا شريك له. وأن محمدا ﷺ خاتم الأنبياء. وأن القرآن كلام الله المنزل المحفوظ.</p>
+        </article>
+        <article class="card-in rounded-3xl bg-white dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800/60 shadow-sm p-6 hover:shadow-md hover:-translate-y-0.5 transition-all" style="animation-delay:.08s">
+          <span class="inline-block text-[11px] font-bold text-emerald-700 dark:text-amber-300 bg-emerald-50 dark:bg-emerald-900/70 rounded-full px-3 py-1 mb-3">الركائز</span>
+          <p class="text-lg leading-loose">أركان الإسلام الخمسة: الشهادة، الصلاة الخمس، الزكاة، صيام شهر رمضان، حج البيت لمن استطاع.</p>
+          <div class="mt-3 text-xs font-bold text-stone-500 dark:text-stone-400 bg-stone-50 dark:bg-emerald-900/40 rounded-xl px-3 py-2 border-r-4 border-emerald-600">— متفق عليه، قال ﷺ: «بُنِيَ الإسلامُ على خمس»</div>
+        </article>
+        <article class="card-in rounded-3xl bg-white dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800/60 shadow-sm p-6 hover:shadow-md hover:-translate-y-0.5 transition-all" style="animation-delay:.16s">
+          <span class="inline-block text-[11px] font-bold text-emerald-700 dark:text-amber-300 bg-emerald-50 dark:bg-emerald-900/70 rounded-full px-3 py-1 mb-3">ستة أركان</span>
+          <p class="text-lg leading-loose">أركان الإيمان الستة: الإيمان بالله، وبملائكته، وبكتبه، وبرسله، وباليوم الآخر، وبالقدر خيره وشره.</p>
+          <div class="mt-3 text-xs font-bold text-stone-500 dark:text-stone-400 bg-stone-50 dark:bg-emerald-900/40 rounded-xl px-3 py-2">— رواه مسلم (حديث جبريل)</div>
+        </article>
       </div>
-    </header>
-    <div class="cards">
-      <article class="card">
-        <span class="card-count-badge">تعريف</span>
-        <p class="card-inner">
-          الإسلام دين توحيدي.
-          أهله يعتقدون أن الله واحد لا شريك له.
-          وأن محمدا ﷺ خاتم الأنبياء.
-          وأن القرآن كلام الله المنزل المحفوظ.
-        </p>
-      </article>
-      <article class="card">
-        <span class="card-count-badge">الركائز</span>
-        <p class="card-inner">
-          أركان الإسلام الخمسة:
-          الشهادة،
-          الصلاة الخمس،
-          الزكاة،
-          صيام شهر رمضان،
-          حج البيت لمن استطاع.
-        </p>
-        <span class="card-reference">— متفق عليه، قال ﷺ: «بُنِيَ الإسلامُ على خمس»</span>
-      </article>
-      <article class="card">
-        <span class="card-count-badge">ستة أركان</span>
-        <p class="card-inner">
-          أركان الإيمان الستة:
-          الإيمان بالله،
-          وبملائكته،
-          وبكتبه،
-          وبرسله،
-          وباليوم الآخر،
-          وبالقدر خيره وشره.
-        </p>
-        <span class="card-reference">— رواه مسلم (حديث جبريل)</span>
-      </article>
-    </div>
-  </section>
+    </section>
 
-  <section class="zikr-section active" id="quranFacts">
-    <header class="section-head">
-      <div class="section-icon">📖</div>
-      <div>
-        <h2>القرآن الكريم</h2>
-        <p>كلام الله العزيز</p>
+    <!-- ===== القرآن الكريم ===== -->
+    <section class="divan-sec mt-14" id="quranFacts">
+      <header class="flex items-center gap-4 mb-6">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-emerald-950 grid place-items-center text-xl shadow-md shrink-0">📖</div>
+        <div>
+          <h2 class="font-head text-2xl font-bold text-emerald-900 dark:text-brand-gold">القرآن الكريم</h2>
+          <p class="text-xs text-stone-500 dark:text-stone-400">كلام الله العزيز</p>
+        </div>
+        <span class="ms-auto hidden sm:block h-px flex-1 bg-gradient-to-l from-amber-200 to-transparent"></span>
+      </header>
+
+      <div class="grid gap-4">
+        <article class="card-in rounded-3xl bg-white dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800/60 shadow-sm p-6 hover:shadow-md hover:-translate-y-0.5 transition-all">
+          <span class="inline-block text-[11px] font-bold text-emerald-700 dark:text-amber-300 bg-emerald-50 dark:bg-emerald-900/70 rounded-full px-3 py-1 mb-3">تعريف</span>
+          <p class="text-lg leading-loose">القرآن كلام الله. نزل على نبيه محمد ﷺ بواسطة جبريل عليه السلام. نزل مقسما على مدى 23 سنة. عدده 114 سورة، و30 جزءا، و60 حزبا.</p>
+        </article>
+        <article class="card-in rounded-3xl bg-gradient-to-br from-emerald-800 to-brand-mid pattern-dots text-white shadow-md p-7">
+          <div class="divan-ayah text-center text-amber-100 mb-4">﴿إِنَّا نَحْنُ نَزَّلْنَا الذِّكْرَ وَإِنَّا لَهُ لَحَافِظُونَ﴾</div>
+          <p class="text-sm text-emerald-100/90 leading-loose text-center">حُفظ القرآن في الصدور، وكُتب في المصحف منذ عهد النبي ﷺ. لم يتحرف منه حرف.</p>
+          <div class="mt-4 text-center text-[11px] font-bold text-amber-200/80">— سورة الحجر، الآية 9</div>
+        </article>
+        <article class="card-in rounded-3xl bg-white dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800/60 shadow-sm p-6 hover:shadow-md hover:-translate-y-0.5 transition-all" style="animation-delay:.08s">
+          <span class="inline-block text-[11px] font-bold text-emerald-700 dark:text-amber-300 bg-emerald-50 dark:bg-emerald-900/70 rounded-full px-3 py-1 mb-3">التدبر</span>
+          <p class="divan-ayah text-emerald-900 dark:text-amber-200 text-center mb-3">﴿أَفَلَا يَتَدَبَّرُونَ الْقُرْآنَ﴾</p>
+          <p class="text-lg leading-loose">قال ﷺ: «خيركم من تعلم القرآن وعلمه».</p>
+          <div class="mt-3 text-xs font-bold text-stone-500 dark:text-stone-400 bg-stone-50 dark:bg-emerald-900/40 rounded-xl px-3 py-2">— النساء 82، وأخرجه البخاري في فضل القرآن</div>
+        </article>
       </div>
-    </header>
-    <div class="cards">
-      <article class="card">
-        <span class="card-count-badge">تعريف</span>
-        <p class="card-inner">
-          القرآن كلام الله.
-          نزل على نبيه محمد ﷺ بواسطة جبريل عليه السلام.
-          نزل مقسما على مدى 23 سنة.
-          عدده 114 سورة، و30 جزءا، و60 حزبا.
-        </p>
+    </section>
+
+    <!-- ===== الدخول في الإسلام ===== -->
+    <section class="divan-sec mt-14" id="enterIslam">
+      <header class="flex items-center gap-4 mb-6">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-teal-400 to-teal-700 text-white grid place-items-center text-xl shadow-md shrink-0">🤲</div>
+        <div>
+          <h2 class="font-head text-2xl font-bold text-emerald-900 dark:text-brand-gold">كيف يدخل المرء الإسلام؟</h2>
+          <p class="text-xs text-stone-500 dark:text-stone-400">بقول الشهادتين إيماناً وبقلب يعترف</p>
+        </div>
+        <span class="ms-auto hidden sm:block h-px flex-1 bg-gradient-to-l from-teal-200 to-transparent"></span>
+      </header>
+
+      <article class="card-in relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-dark via-[#0e4636] to-brand-mid pattern-dots text-white shadow-lg p-8 sm:p-10 text-center">
+        <div class="absolute top-0 right-0 w-full h-1 bg-gradient-to-l from-amber-300 via-amber-100 to-amber-300"></div>
+        <p class="divan-ayah text-amber-100 leading-[2.5]">أشهد أن لا إله إلا الله، وأشهد أن محمدا رسول الله</p>
+        <p class="text-sm text-emerald-100/80 mt-4">من قالها بقلب مصدّق دخل الإسلام.</p>
+        <div class="mt-4 text-[11px] font-bold text-amber-200/80">— الشهادتان أصل الدخول في الدين</div>
       </article>
-      <article class="card">
-        <span class="card-count-badge">حفظه</span>
-        <p class="card-inner">
-          ﴿إِنَّا نَحْنُ نَزَّلْنَا الذِّكْرَ وَإِنَّا لَهُ لَحَافِظُونَ﴾.
-          حُفظ القرآن في الصدور،
-          وكتب في المصحف منذ عهد النبي ﷺ.
-          لم يتحرف منه حرف.
-        </p>
-        <span class="card-reference">— سورة الحجر، الآية 9</span>
-      </article>
-      <article class="card">
-        <span class="card-count-badge">التدبر</span>
-        <p class="card-inner">
-          ﴿أَفَلَا يَتَدَبَّرُونَ الْقُرْآنَ﴾.
-          قال ﷺ: «خيركم من تعلم القرآن وعلمه».
-        </p>
-        <span class="card-reference">— النساء 82، وأخرجه البخاري في فضل القرآن</span>
-      </article>
+    </section>
+
+    <!-- تنبيه الدقة -->
+    <div class="divan-note mt-10 rounded-2xl bg-amber-50 dark:bg-amber-400/10 border border-amber-200/70 dark:border-amber-400/25 px-5 py-4 text-xs leading-relaxed text-stone-600 dark:text-stone-300">
+      ⚖️ هذه معلومات موجزة. وللدقة التامة، ارجع إلى أهل العلم.
     </div>
-  </section>
 
-  <section class="zikr-section active" id="enterIslam">
-    <header class="section-head">
-      <div class="section-icon">🤲</div>
-      <div>
-        <h2>كيف يدخل المرء الإسلام؟</h2>
-        <p>بقول الشهادتين إيمانا وبقلب يعترف</p>
-      </div>
-    </header>
-    <div class="cards">
-      <article class="card">
-        <p class="card-inner">
-          أشهد أن لا إله إلا الله،
-          وأشهد أن محمدا رسول الله.
-          من قالها بقلب مصدق دخل الإسلام.
-        </p>
-        <span class="card-reference">— الشهادتان أصل الدخول في الدين</span>
-      </article>
+    <!-- روابط التصفح -->
+    <div class="mt-8 grid sm:grid-cols-2 gap-4">
+      <a href="index.html" class="group rounded-3xl bg-gradient-to-br from-emerald-700 to-emerald-600 text-white p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all flex items-center gap-4 no-underline">
+        <span class="text-3xl group-hover:translate-x-[-4px] transition-transform">📿</span>
+        <span class="font-head font-bold">رجوع إلى الأذكار</span>
+      </a>
+      <a href="index.html" class="group rounded-3xl bg-gradient-to-br from-amber-400 to-amber-500 text-emerald-950 p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all flex items-center gap-4 no-underline">
+        <span class="text-3xl group-hover:rotate-12 transition-transform">📊</span>
+        <span class="font-head font-bold">لوحة إنجازك</span>
+      </a>
     </div>
-  </section>
+  </main>
+</div>
 
-</main>
-
-<footer class="footer">
-  <p class="footer-duq">﴿إِنَّا نَحْنُ نَزَّلْنَا الذِّكْرَ وَإِنَّا لَهُ لَحَافِظُونَ﴾ — الحجر 9</p>
-  <p>هذه معلومات موجزة. وللدقة التامة، ارجع إلى أهل العلم.</p>
-  <a class="btn btn-gold" href="index.html" style="margin-top: 1rem">← رجوع إلى الأذكار</a>
+<footer class="app-margin py-10 text-center text-xs text-stone-400 dark:text-stone-500">
+  ﴿إِنَّا نَحْنُ نَزَّلْنَا الذِّكْرَ وَإِنَّا لَهُ لَحَافِظُونَ﴾ — الحجر 9
 </footer>
 
 <button id="toTop" class="to-top" aria-label="العودة للأعلى">❯</button>
