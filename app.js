@@ -1,707 +1,537 @@
 /*
-  ﴿ نُورُ الذِّكْر ﴾ — أذكار صحيحة وأدعية مأثورة
-  جميع الأذكار من الصحيحين (البخاري ومسلم) والسنن الصحيحة
-  ─────────────────────────────────────────────────
-  سجل التغييرات (الأحدث أولاً):
-  • 2026-10-17 [v1] النسخة المرجعية محفوظة في: _snapshots/v1_2026-10-17_20-41-16
-    - بنِيّة الأقسام: زر تبويب لكل قسم (showSection) — يظهر قسماً واحداً فقط
-    - كل ذكر ببطاقة مستقلة فيها: شارة عدد المرات، عدّاد المتبقّي، زر [+1]، نسخ، مشاركة
-    - عند وصول عدّاد الذكر إلي الصفر: تختفي بطاقته (dissolve) وتُحفظ الحالة في localStorage
-    - الإحصاءات: nz_day (إنجاز اليوم) و nz_total (إجمالي مدى الحياة) وتُحدّث مع كل ضغطة
-    - المسبحة: عدّاد بهدف (33/99/100/بحسب) + دورة مكتملة (nz_rounds)
-  ─────────────────────────────────────────────────
+  ﴿ نُورُ الذِّكْر ﴾ — منطق التطبيق (v4)
+  سجل التغييرات:
+  2026-11-02 [v4] إعادة تصميم Tailwind + قائمة جانبية + حسابات مستخدمين محلية (localStorage)
+    - كل مستخدم: اسم مستخدم + كلمة سر (مهمة هنا على الجهاز فقط — ليست تشفيراً مصوفاً)
+    - لكل حساب: عدّاد الحسنات (+10 لكل تسبيحة)، مجموع التسبيحات، سلاسل الأيام، تقدّم كل قسم
+    - لوحة الصدارة: ترتيب الحسابات المحلية على هذا الجهاز حسب الحسنات
+  البيانات النصية للأذكار في azkar-data.js (مستخرجة حرفياً)
+  ملاحظة: يحافظ على حمايات null-safe حتى تعمل islam.html (legacy) مع نفس الملف
 */
 
 'use strict';
 
-/* ---------- أذكار الصباح ---------- */
-
-const MORNING = [
-  {
-    text: 'أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ. رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَذَا الْيَوْمِ وَخَيْرَ مَا بَعْدَهُ، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي هَذَا الْيَوْمِ وَشَرِّ مَا بَعْدَهُ.',
-    count: 1,
-    ref: 'رواه مسلم',
-  },
-  {
-    text: 'اللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ النُّشُورُ.',
-    count: 1,
-    ref: 'رواه الترمذي، وصححه الألباني',
-  },
-  {
-    text: 'اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَٰهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي، فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ.',
-    count: 1,
-    ref: 'رواه البخاري — «سيِّد الاستغفار»',
-  },
-  {
-    text: 'اللَّهُمَّ عَافِنِي فِي بَدَنِي، اللَّهُمَّ عَافِنِي فِي سَمْعِي، اللَّهُمَّ عَافِنِي فِي بَصَرِي، لَا إِلَٰهَ إِلَّا أَنْتَ.',
-    count: 3,
-    ref: 'رواه أبو داود، وصححه الألباني',
-  },
-  {
-    text: 'حَسْبِيَ اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ، عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ.',
-    count: 7,
-    ref: 'حسّنه أبو داود والترمذي، وصححه الألباني',
-  },
-  {
-    text: 'بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ.',
-    count: 3,
-    ref: 'رواه أبو داود والترمذي، وصححه الألباني',
-  },
-  {
-    text: 'رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ ﷺ نَبِيًّا.',
-    count: 3,
-    ref: 'رواه أبو داود والترمذي، وصححه الألباني',
-  },
-  {
-    text: 'يَا حَيُّ يَا قَيُّومُ بِرَحْمَتِكَ أَسْتَغِيثُ، أَصْلِحْ لِي شَأْنِي كُلَّهُ وَلَا تَكِلْنِي إِلَى نَفْسِي طَرْفَةَ عَيْنٍ.',
-    count: 1,
-    ref: 'رواه الحاكم، وصححه الألباني',
-  },
-  {
-    text: 'أَصْبَحْنَا عَلَى فِطْرَةِ الْإِسْلَامِ، وَكَلِمَةِ الْإِخْلَاصِ، وَعَلَى دِينِ نَبِيِّنَا مُحَمَّدٍ ﷺ، وَعَلَى مِلَّةِ أَبِينَا إِبْرَاهِيمَ، حَنِيفًا مُسْلِمًا وَمَا كَانَ مِنَ الْمُشْرِكِينَ.',
-    count: 1,
-    ref: 'رواه أحمد، وصححه الألباني',
-  },
-  {
-    text: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ.',
-    count: 100,
-    ref: 'رواه مسلم — «من قالها مئة مرة حولت خطاياه ولو كانت مثل زبد البحر»',
-  },
-  {
-    text: 'لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ.',
-    count: 10,
-    ref: 'رواه مسلم — «كانت له عدل عشر رقاب»',
-  },
-  {
-    text: 'اللَّهُمَّ إِنِّي أَسْأَلُكَ عِلْمًا نَافِعًا، وَرِزْقًا طَيِّبًا، وَعَمَلًا مُتَقَبَّلًا.',
-    count: 1,
-    ref: 'رواه ابن ماجه، وصححه الألباني — يقال بعد صلاة الفجر',
-  },
-  {
-    text: 'أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ.',
-    count: 100,
-    ref: 'متفق عليه — كان النبي ﷺ يستغفر في اليوم مئة مرة',
-  },
-];
-
-/* ---------- أذكار المساء ---------- */
-
-const EVENING = [
-  {
-    text: 'أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ. رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَذِهِ اللَّيْلَةِ وَخَيْرَ مَا بَعْدَهَا، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي هَذِهِ اللَّيْلَةِ وَشَرِّ مَا بَعْدَهَا.',
-    count: 1,
-    ref: 'رواه مسلم',
-  },
-  {
-    text: 'اللَّهُمَّ بِكَ أَمْسَيْنَا، وَبِكَ أَصْبَحْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ الْمَصِيرُ.',
-    count: 1,
-    ref: 'رواه الترمذي، وصححه الألباني',
-  },
-  {
-    text: 'اللَّهُمَّ عَافِنِي فِي بَدَنِي، اللَّهُمَّ عَافِنِي فِي سَمْعِي، اللَّهُمَّ عَافِنِي فِي بَصَرِي، لَا إِلَٰهَ إِلَّا أَنْتَ، اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْكُفْرِ وَالْفَقْرِ، وَأَعُوذُ بِكَ مِنْ عَذَابِ الْقَبْرِ.',
-    count: 3,
-    ref: 'رواه أبو داود، وصححه الألباني',
-  },
-  {
-    text: 'أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ.',
-    count: 3,
-    ref: 'رواه مسلم — «من قالها حين يمسي فلم تضره تلك الليلة حُمَة»',
-  },
-  {
-    text: 'بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ.',
-    count: 3,
-    ref: 'رواه أبو داود والترمذي، وصححه الألباني',
-  },
-  {
-    text: 'رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ ﷺ نَبِيًّا.',
-    count: 3,
-    ref: 'رواه أبو داود والترمذي، وصححه الألباني',
-  },
-  {
-    text: 'حَسْبِيَ اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ، عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ.',
-    count: 7,
-    ref: 'حسّنه أبو داود والترمذي، وصححه الألباني',
-  },
-  {
-    text: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ.',
-    count: 100,
-    ref: 'رواه مسلم',
-  },
-  {
-    text: 'أَمْسَيْنَا عَلَى فِطْرَةِ الْإِسْلَامِ، وَكَلِمَةِ الْإِخْلَاصِ، وَعَلَى دِينِ نَبِيِّنَا مُحَمَّدٍ ﷺ، وَعَلَى مِلَّةِ أَبِينَا إِبْرَاهِيمَ، حَنِيفًا مُسْلِمًا وَمَا كَانَ مِنَ الْمُشْرِكِينَ.',
-    count: 1,
-    ref: 'رواه أحمد، وصححه الألباني',
-  },
-  {
-    text: 'أَعُوذُ بِاللهِ مِنْ شَرِّ نَفْسِي، أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ.',
-    count: 1,
-    ref: 'رواه الترمذي ودارمي، وصححه الألباني — كانت من دعاء النبي ﷺ عشياً',
-  },
-  {
-    text: 'أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ.',
-    count: 100,
-    ref: 'متفق عليه',
-  },
-];
-
-/* ---------- أذكار النوم ---------- */
-
-const SLEEP = [
-  {
-    text: 'بِاسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا.',
-    count: 1,
-    ref: 'متفق عليه — يقال عند النوم',
-  },
-  {
-    text: 'اللَّهُمَّ أَسْلَمْتُ نَفْسِي إِلَيْكَ، وَوَجَّهْتُ وَجْهِي إِلَيْكَ، وَفَوَّضْتُ أَمْرِي إِلَيْكَ، وَأَلْجَأْتُ ظَهْرِي إِلَيْكَ، رَغْبَةً وَرَهْبَةً إِلَيْكَ، لَا مَلْجَأَ وَلَا مَنْجَا مِنْكَ إِلَّا إِلَيْكَ، آمَنْتُ بِكِتَابِكَ الَّذِي أَنْزَلْتَ، وَبِنَبِيِّكَ الَّذِي أَرْسَلْتَ.',
-    count: 1,
-    ref: 'متفق عليه — «فإن مُتَّ مُتَّ على الفطرة»',
-  },
-  {
-    text: 'يُجَمِّعُ كَفَّيْهِ ثُمَّ يَنْفُثُ فِيهِمَا وَيَقْرَأُ: ﴿قُلْ هُوَ اللَّهُ أَحَدٌ﴾ وَ﴿قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ﴾ وَ﴿قُلْ أَعُوذُ بِرَبِّ النَّاسِ﴾، ثُمَّ يَمْسَحُ بِهِمَا مَا اسْتَطَاعَ مِنْ جَسَدِهِ، يَبْدَأُ بِهِمَا رَأْسَهُ وَوَجْهَهُ وَمَا أَقْبَلَ مِنْ جَسَدِهِ.',
-    count: 3,
-    ref: 'متفق عليه — أفعل ذلك ثلاث مرات حين أوي إلى فراشي',
-  },
-  {
-    text: 'سُبْحَانَ اللَّهِ (٣٣ مرة)، الْحَمْدُ لِلَّهِ (٣٣ مرة)، اللَّهُ أَكْبَرُ (٣٤ مرة).',
-    count: 1,
-    ref: 'متفق عليه — كان النبي ﷺ يوصي فاطمة وعليا بهذا عند النوم',
-  },
-  {
-    text: 'الْحَمْدُ لِلَّهِ الَّذِي أَطْعَمَنَا وَسَقَانَا، وَكَفَانَا وَآوَانَا، فَكَمْ مِمَّنْ لَا كَافِيَ لَهُ وَلَا مُؤْوِيَ.',
-    count: 1,
-    ref: 'رواه مسلم',
-  },
-  {
-    text: 'اللَّهُمَّ رَبَّ السَّمَاوَاتِ السَّبْعِ وَمَا أَظَلَّتْ، وَرَبَّ الْأَرَضِينَ وَمَا أَقَلَّتْ، وَرَبَّ الشَّيَاطِينِ وَمَا أَضَلَّتْ، كُنْ لِي جَارًا مِنْ شَرِّ خَلْقِكَ كُلِّهِمْ جَمِيعًا.',
-    count: 1,
-    ref: 'رواه الترمذي وأبو داود، وصححه الألباني',
-  },
-  {
-    text: 'اللَّهُمَّ إِنَّكَ خَلَقْتَ نَفْسِي وَأَنْتَ تَوَفَّاهَا، لَكَ مَمَاتُهَا وَمَحْيَاهَا، إِنْ أَحْيَيْتَهَا فَاحْفَظْهَا، وَإِنْ أَمَتَّهَا فَاغْفِرْ لَهَا، اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَافِيَةَ.',
-    count: 1,
-    ref: 'رواه مسلم (صحيح)',
-  },
-  {
-    text: 'قراءة سورة آمنة الرسول (الآيتان 285 و286 من سورة آل عمران)',
-    count: 1,
-    ref: 'رواه مسلم — «من قرأهما في ليلة أجزتَه»',
-  },
-];
-
-/* ---------- الذكر بعد الصلاة ---------- */
-
-const PRAYER = [
-  {
-    text: 'أَسْتَغْفِرُ اللَّهَ (ثلاثاً)، اللَّهُمَّ أَنْتَ السَّلَامُ وَمِنْكَ السَّلَامُ، تَبَارَكْتَ يَا ذَا الْجَلَالِ وَالْإِكْرَامِ.',
-    count: 1,
-    ref: 'رواه مسلم — كان النبي ﷺ إذا سلّم استغفر ثلاثاً ثم قال هذا',
-  },
-  {
-    text: 'لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، اللَّهُمَّ لَا مَانِعَ لِمَا أَعْطَيْتَ، وَلَا مُعْطِيَ لِمَا مَنَعْتَ، وَلَا يَنْفَعُ ذَا الْجَدِّ مِنْكَ الْجَدُّ.',
-    count: 1,
-    ref: 'متفق عليه',
-  },
-  {
-    text: 'سُبْحَانَ اللَّهِ (٣٣)، الْحَمْدُ لِلَّهِ (٣٣)، اللَّهُ أَكْبَرُ (٣٣)، ثم تمام المئة: لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ.',
-    count: 1,
-    ref: 'رواه مسلم — «غفرت خطاياه ولو كانت مثل زبد البحر»',
-  },
-  {
-    text: 'اللَّهُمَّ أَعِنِّي عَلَى ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ.',
-    count: 1,
-    ref: 'رواه أبو داود، وصححه الألباني — دعاء معقّب بعد الصلاة',
-  },
-  {
-    text: 'لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ.',
-    count: 10,
-    ref: 'رواه مسلم — عشر مرات بعد كل صلاة، ومئة مرة بعد المغرب خاصة',
-  },
-  {
-    text: 'اللَّهُمَّ لَا تَصْرِفْ قَلْبِي بَعْدَ إِذْ هَدَيْتَنِي، وَهَبْ لِي مِنْ لَدُنْكَ رَحْمَةً، إِنَّكَ أَنْتَ الْوَهَّابُ.',
-    count: 1,
-    ref: 'رواه الترمذي، وصححه الألباني — يقال مباشرة بعد الصلاة',
-  },
-];
-
-/* ---------- أدعية مأثورة ---------- */
-
-const DUAS = [
-  {
-    text: 'اللَّهُمَّ إِنِّي أَسْأَلُكَ الْهُدَى وَالتُّقَى وَالْعَفَافَ وَالْغِنَى.',
-    count: 1,
-    ref: 'رواه مسلم — من أحب دعاء النبي ﷺ',
-  },
-  {
-    text: 'اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْهَمِّ وَالْحَزَنِ، وَالْعَجْزِ وَالْكَسَلِ، وَالْبُخْلِ وَالْجُبْنِ، وَضَلَعِ الدَّيْنِ، وَغَلَبَةِ الرِّجَالِ.',
-    count: 1,
-    ref: 'رواه البخاري — عن أنس رضي الله عنه كان النبي ﷺ يدعو بها دائماً',
-  },
-  {
-    text: 'لَا إِلَٰهَ إِلَّا أَنْتَ سُبْحَانَكَ إِنِّي كُنْتُ مِنَ الظَّالِمِينَ.',
-    count: 1,
-    ref: 'رواه الترمذي وصححه الألباني — «ما من رجل مُكْرَه يدعو بها إلا أجابَه الله»',
-  },
-  {
-    text: 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً، وَفِي الْآخِرَةِ حَسَنَةً، وَقِنَا عَذَابَ النَّارِ.',
-    count: 1,
-    ref: 'سورة البقرة 201 — كان أكثر دعاء النبي ﷺ',
-  },
-  {
-    text: 'اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ زَوَالِ نِعْمَتِكَ، وَتَحَوُّلِ عَافِيَتِكَ، وَفَجْأَةِ نِقْمَتِكَ، وَجَمِيعِ سَخَطِكَ.',
-    count: 1,
-    ref: 'رواه مسلم',
-  },
-  {
-    text: 'يَا مُقَلِّبَ الْقُلُوبِ ثَبِّتْ قَلْبِي عَلَى دِينِكَ.',
-    count: 1,
-    ref: 'رواه الترمذي، وصححه الألباني',
-  },
-  {
-    text: 'اللَّهُمَّ أَعِنِّي عَلَى ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ.',
-    count: 1,
-    ref: 'رواه أبو داود، وصححه الألباني — أوصى بها النبي ﷺ معاذاً رضي الله عنه',
-  },
-  {
-    text: 'اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ فَضْلِكَ وَرَحْمَتِكَ، فَإِنَّهُ لَا يَمْلِكُهَا إِلَّا أَنْتَ.',
-    count: 1,
-    ref: 'رواه أبو داود، وصححه الألباني',
-  },
-  {
-    text: 'اللَّهُمَّ اهْدِنِي فِيمَنْ هَدَيْتَ، وَعَافِنِي فِيمَنْ عَافَيْتَ، وَتَوَلَّنِي فِيمَنْ تَوَلَّيْتَ، وَبَارِكْ لِي فِيمَا أَعْطَيْتَ، وَقِنِي شَرَّ مَا قَضَيْتَ، إِنَّكَ تَقْضِي وَلَا يُقْضَى عَلَيْكَ.',
-    count: 1,
-    ref: 'رواه الترمذي، وصححه الألباني — من دعاء قنوت وتر',
-  },
-  {
-    text: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، سُبْحَانَ اللَّهِ الْعَظِيمِ.',
-    count: 1,
-    ref: 'متفق عليه — كلمتان خفيفتان على اللسان، ثقيلتان في الميزان، حبيبتان إلى الرحمن',
-  },
-  {
-    text: 'اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ، كَمَا صَلَّيْتَ عَلَى إِبْرَاهِيمَ وَعَلَى آلِ إِبْرَاهِيمَ، إِنَّكَ حَمِيدٌ مَجِيدٌ، اللَّهُمَّ بَارِكْ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ، كَمَا بَارَكْتَ عَلَى إِبْرَاهِيمَ وَعَلَى آلِ إِبْرَاهِيمَ، إِنَّكَ حَمِيدٌ مَجِيدٌ.',
-    count: 1,
-    ref: 'متفق عليه — الصلاة الإِبراهيمية، من أفضل الصلاة بالنبي ﷺ',
-  },
-  {
-    text: 'لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ.',
-    count: 1,
-    ref: 'متفق عليه — كنز من كنوز الجنة، يقال عند البلاء والشدة',
-  },
-];
-
-const SECTIONS = [
-  { id: 'morning', name: 'أذكار الصباح', target: 'cardsMorning', items: MORNING },
-  { id: 'evening', name: 'أذكار المساء', target: 'cardsEvening', items: EVENING },
-  { id: 'sleep', name: 'أذكار النوم', target: 'cardsSleep', items: SLEEP },
-  { id: 'prayer', name: 'الذكر بعد الصلاة', target: 'cardsPrayer', items: PRAYER },
-  { id: 'duas', name: 'أدعية مأثورة', target: 'cardsDuas', items: DUAS },
-];
-
-/* ========================================================== */
-
-const $ = (s) => document.querySelector(s);
-const $$ = (s) => document.querySelectorAll(s);
-
+/* ==========================================================
+   التخزين المحلي
+   ========================================================== */
 const STORE = {
   get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem(k); } catch {} },
 };
 
-/* ---------- toast ---------- */
+const todayKey = () => new Date().toISOString().slice(0, 10);
+const HASANAT_PER_REP = 10; // القاعدة العشرية: كل حسنة بعشر أمثالها
+
+/* ==========================================================
+   قاعدة البيانات المحلية: المستخدمون
+   users = { username: { u, p, created, hasanat, reps, days:{}, done:{section:{idx:count}} } }
+   ========================================================== */
+const DB = {
+  load() { return STORE.get('nz_users', {}); },
+  save(users) { STORE.set('nz_users', users); },
+  get(u) { return this.load()[u] || null; },
+  hash(s) { // بسيط على الجهاز فقط (تلميح: الثقة بالجهاز، لا بالشبكة)
+    let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
+    return h.toString(16);
+  },
+  register(u, p) {
+    const users = this.load();
+    if (users[u]) return { ok: false, err: 'اسم المستخدم محجوز، اختر غيره' };
+    if (u.length < 3) return { ok: false, err: 'الاسم قصير جداً (٣ أحرف فأكثر)' };
+    if (p.length < 4) return { ok: false, err: 'كلمة السر قصيرة (٤ خانات فأكثر)' };
+    users[u] = { u, p: this.hash(p), created: todayKey(), hasanat: 0, reps: 0, days: {}, done: {} };
+    this.save(users);
+    return { ok: true };
+  },
+  login(u, p) {
+    const users = this.load();
+    const user = users[u];
+    if (!user) return { ok: false, err: 'لا يوجد حساب بهذا الاسم' };
+    if (user.p !== this.hash(p)) return { ok: false, err: 'كلمة السر غير صحيحة' };
+    user.reps = user.reps || 0; user.hasanat = user.hasanat || 0;
+    // ترحيل التقدّم القديم (قبل الحسابات) إن وُجد وخانة القسم فارغة
+    SECTIONS.forEach((s) => {
+      const legacy = STORE.get('nz_done_' + s.id, null);
+      if (legacy && Object.keys(user.done[s.id] || {}).length === 0) {
+        user.done[s.id] = legacy;
+        const tot = Object.values(legacy).reduce((a, c) => a + (c || 0), 0);
+        user.reps += tot; user.hasanat += tot * HASANAT_PER_REP;
+      }
+    });
+    this.save(users);
+    return { ok: true };
+  },
+  // إضافة تسبيحة للحساب الحالي
+  addRep(user, sectionId, idx) {
+    const users = this.load(); const u = users[user]; if (!u) return;
+    u.reps = (u.reps || 0) + 1;
+    u.hasanat = (u.hasanat || 0) + HASANAT_PER_REP;
+    u.days = u.days || {}; u.days[todayKey()] = (u.days[todayKey()] || 0) + 1;
+    u.done = u.done || {}; const s = u.done[sectionId] || (u.done[sectionId] = {});
+    s[idx] = (s[idx] || 0) + 1;
+    users[user] = u; this.save(users);
+  },
+};
+
+const Auth = {
+  current() { return STORE.get('nz_current', null); },
+  login(u) { STORE.set('nz_current', u); },
+  logout() { STORE.del('nz_current'); },
+  me() { const u = this.current(); return u ? DB.get(u) : null; },
+};
+
+/* ==========================================================
+   أدوات مساعدة
+   ========================================================== */
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => document.querySelectorAll(s);
+
 let toastTimer = null;
 function toast(msg, gold = false) {
-  let el = $('#realToast');
+  let el = $('#nzToast');
   if (!el) {
     el = document.createElement('div');
-    el.id = 'realToast';
-    el.className = 'toast';
+    el.id = 'nzToast';
+    el.className = 'fixed bottom-6 right-1/2 translate-x-1/2 z-[500] rounded-full px-6 py-2.5 text-sm font-bold text-white bg-emerald-900 shadow-lg shadow-emerald-900/30';
     document.body.appendChild(el);
   }
   el.textContent = msg;
-  el.classList.toggle('gold', gold);
+  el.classList.toggle('!bg-amber-400', gold);
+  el.classList.toggle('!text-emerald-950', gold);
+  el.style.animation = 'toastIn .3s ease';
   el.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+  toastTimer = setTimeout(() => el.remove(), 2400);
 }
 
-/* ---------- بناء الأذكار ---------- */
-
-function zikrHTML(item, sectionName, idx) {
+/* ==========================================================
+   بناء بطاقات الأذكار
+   ========================================================== */
+function zikrHTML(item, sectionId, idx) {
   const total = item.count || 1;
   return `
-  <article class="card" data-section="${sectionName}" data-idx="${idx}">
-    <span class="card-count-badge">عدد المرات المطلوبة: ${total === 1 ? 'مرة واحدة' : `${total} مرات`}</span>
-    <p class="card-inner">${item.text}</p>
-    ${item.ref ? `<span class="card-reference">— ${item.ref}</span>` : ''}
-    <div class="card-remaining">
-      <span class="remaining-pill" data-remaining>
-        <span class="rem-num" data-num>${total}</span>
-        <span class="remaining-label">مرة متبقّية</span>
+  <article class="card-item card-in rounded-2xl bg-white dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800/60 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 p-5 relative overflow-hidden" data-section="${sectionId}" data-idx="${idx}" style="animation-delay:${idx * 60}ms">
+    <span class="absolute top-0 right-0 h-full w-1 bg-gradient-to-b from-amber-300 to-emerald-600"></span>
+    <span class="inline-block text-[11px] font-bold text-emerald-700 dark:text-amber-300 bg-emerald-50 dark:bg-emerald-900/70 rounded-full px-3 py-1 mb-3">عدد المرات المطلوبة: ${total === 1 ? 'مرة واحدة' : `${total} مرات`}</span>
+    <p class="font-quran text-xl leading-loose text-stone-800 dark:text-stone-100 mb-3">${item.text}</p>
+    ${item.ref ? `<span class="text-xs text-stone-500 dark:text-stone-400">— ${item.ref}</span>` : ''}
+    <div class="mt-4 flex items-center gap-3 flex-wrap">
+      <span class="rem-pill inline-flex items-center gap-2 rounded-xl px-3.5 py-1.5 bg-amber-50 dark:bg-amber-400/10 border border-amber-200/70 dark:border-amber-400/30" data-remaining>
+        <b class="rem-num font-head text-lg text-amber-600 dark:text-amber-300 min-w-[2ch] text-center" data-num>${total}</b>
+        <span class="text-[11px] font-semibold text-stone-500 dark:text-stone-400">مرة متبقّية</span>
       </span>
-      <button class="card-counter-btn" title="اضغط بعد كل مرّة تنهي فيها الذكر">+1</button>
-      <div class="card-actions">
-        <button class="card-icon-btn js-copy" title="نسخ الذكر">⧉</button>
-        <button class="card-icon-btn js-share" title="مشاركة">↗</button>
+      <button class="card-counter-btn bg-emerald-700 hover:bg-emerald-600 active:scale-95 text-white rounded-xl px-5 py-2 text-sm font-bold transition-all shadow-sm shadow-emerald-700/30 inline-flex items-center gap-1" title="اضغط بعد كل مرّة">+1</button>
+      <div class="ms-auto flex gap-1.5">
+        <button class="card-icon-btn js-copy w-9 h-9 rounded-xl border border-emerald-100 dark:border-emerald-800 text-stone-500 hover:text-emerald-600 hover:border-emerald-300 transition-colors" title="نسخ الذكر">⧉</button>
+        <button class="card-icon-btn js-share w-9 h-9 rounded-xl border border-emerald-100 dark:border-emerald-800 text-stone-500 hover:text-emerald-600 hover:border-emerald-300 transition-colors" title="مشاركة">↗</button>
       </div>
     </div>
   </article>`;
 }
 
-/* تنظيم البطاقات حسب المتبقّي */
 function applyRemainder(cardEl, item, completed) {
   const total = item.count || 1;
   const remaining = Math.max(total - completed, 0);
   const numEl = cardEl.querySelector('[data-num]');
   const pill = cardEl.querySelector('[data-remaining]');
-  const label = pill.querySelector('.remaining-label');
-  if (total === 1) label.textContent = 'مرة متبقّية';
-  else label.textContent = 'مرة متبقّية';
+  if (!numEl || !pill) return remaining;
   numEl.textContent = remaining;
-  pill.classList.toggle('low', remaining > 0 && remaining <= 3);
+  numEl.classList.remove('pop-num'); void numEl.offsetWidth; numEl.classList.add('pop-num');
+  pill.classList.toggle('!border-amber-400', remaining > 0 && remaining <= 3);
   return remaining;
 }
 
 function render() {
-  let totalItems = 0;
+  const user = Auth.me();
   SECTIONS.forEach((sec) => {
     const host = document.getElementById(sec.target);
     if (!host) return;
-    host.innerHTML = sec.items.map((it, i) => zikrHTML(it, sec.name, i)).join('');
-    const progress = STORE.get('nz_done_' + sec.id, {});
-    host.querySelectorAll('.card').forEach((cardEl) => {
-      const idx = cardEl.dataset.idx;
-      const item = sec.items[+idx];
-      const completed = progress[idx] || 0;
-      const remaining = applyRemainder(cardEl, item, completed);
-      if (remaining <= 0) cardEl.style.display = 'none';
-    });
-    totalItems += sec.items.length;
+    const prog = (user && user.done[sec.id]) || {};
+    host.innerHTML = sec.items
+      .map((it, i) => {
+        // الأذكار المكتملة تحت ٠ تُخفى مباشرة عند الرسم
+        const done = (prog[i] || 0) >= (it.count || 1);
+        return done ? '' : zikrHTML(it, sec.id, i);
+      })
+      .join('');
   });
-  $('#statMorning') && ($('#statMorning').textContent = MORNING.length);
-  $('#statEvening') && ($('#statEvening').textContent = EVENING.length);
-  $('#statTotal') && ($('#statTotal').textContent = totalItems);
+  updateCountsBadges();
 }
 
-/* عدّاد كل ذكر: كل ضغطة = نزول المتبقّي ١، وعند الصفر تختفي البطاقة */
+function updateCountsBadges() {
+  const user = Auth.me();
+  SECTIONS.forEach((sec) => {
+    const cnt = document.getElementById('count' + sec.target.slice(5));
+    if (!cnt) return;
+    const prog = (user && user.done[sec.id]) || {};
+    const doneItems = sec.items.filter((it, i) => (prog[i] || 0) >= (it.count || 1)).length;
+    cnt.textContent = `${doneItems}/${sec.items.length}`;
+  });
+}
+
 function bindCounters() {
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('.card-counter-btn');
     if (btn) {
-      const card = btn.closest('.card');
-      const sectionEl = card.closest('.zikr-section');
-      const sectionId = sectionEl.dataset.section;
+      const card = btn.closest('.card-item');
+      const sectionId = card.dataset.section;
       const idx = card.dataset.idx;
       const sec = SECTIONS.find((s) => s.id === sectionId);
       const item = sec?.items?.[+idx];
       if (!item) return;
       const total = item.count || 1;
-      const key = 'nz_done_' + sectionId;
-      const prog = STORE.get(key, {});
-      const completed = Math.min((prog[idx] || 0) + 1, total);
-      prog[idx] = completed;
-      STORE.set(key, prog);
-      bumpRepCounter();
 
-      const remaining = applyRemainder(card, item, completed);
-      if (remaining <= 0) {
-        // اختفاء البطاقة بحنان
-        card.classList.add('dissolving');
-        setTimeout(() => { card.style.display = 'none'; }, 600);
-        toast('أتممتَ الذكر كاملاً — بارك الله فيك ✓', true);
-      } else if (remaining <= 3) {
-        toast('أوشكتَ على الانتهاء، باقي ' + remaining);
+      const me = Auth.me();
+      if (!me) {
+        toast('سجّل دخولك أولاً ليُحسب لك إنجازك ✨');
+        openView('profile');
+        return;
       }
-      renderDayProgress();
+      const completedTotal = Math.min((me.done[sectionId]?.[idx] || 0) + 1, total);
+      DB.addRep(Auth.current(), sectionId, idx);
+
+      const after = DB.get(Auth.current());
+      const nowCount = (after.done[sectionId] || {})[idx] || 0;
+      const remaining = applyRemainder(card, item, Math.min(nowCount, total));
+      if (remaining <= 0) {
+        card.classList.add('celebrate', 'dissolve');
+        setTimeout(() => { card.style.display = 'none'; }, 600);
+        toast('أتممتَ الذكر كاملاً — بارك الله فيك 🌟', true);
+      }
+      updateCountsBadges();
+      refreshUserUI({ cards: false });
       return;
     }
-
     const copyBtn = e.target.closest('.js-copy');
-    if (copyBtn) {
-      const text = copyBtn.closest('.card').querySelector('.card-inner').innerText;
-      copyText(text);
-      return;
-    }
+    if (copyBtn) { copyText(copyBtn.closest('.card-item').querySelector('.font-quran, .card-inner').innerText); return; }
     const shareBtn = e.target.closest('.js-share');
-    if (shareBtn) {
-      const text = shareBtn.closest('.card').querySelector('.card-inner').innerText;
-      shareZikr(text);
-    }
-  });
-}
-
-/* إعادة كل الأذكار للظهور من جديد */
-function bindResetAll() {
-  if (!document.getElementById('resetAllBtn')) return;
-  $('#resetAllBtn').addEventListener('click', () => {
-    SECTIONS.forEach((s) => localStorage.removeItem('nz_done_' + s.id));
-    localStorage.removeItem('nz_day');
-    localStorage.removeItem('nz_total');
-    render();
-    renderDayProgress();
-    showSection('morning');
-    toast('رُجّعت كل الأذكار كما كانت ✓');
+    if (shareBtn) { shareZikr(shareBtn.closest('.card-item').querySelector('.font-quran, .card-inner').innerText); }
   });
 }
 
 function copyText(text) {
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(text).then(
-      () => toast('تمّ نسخ الذكر ✓'),
-      () => fallbackCopy(text)
-    );
-  } else fallbackCopy(text);
+  if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => toast('تمّ النسخ ✓'), () => fallbackCopy(text));
+  else fallbackCopy(text);
 }
 function fallbackCopy(text) {
-  const ta = document.createElement('textarea');
-  ta.value = text;
-  ta.style.position = 'fixed';
-  ta.style.opacity = '0';
-  document.body.appendChild(ta);
-  ta.select();
-  try { document.execCommand('copy'); toast('تمّ نسخ الذكر ✓'); } catch { toast('تعذّر النسخ'); }
+  const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); toast('تمّ النسخ ✓'); } catch { toast('تعذّر النسخ'); }
   ta.remove();
 }
-
 function shareZikr(text) {
-  if (navigator.share) {
-    navigator.share({ text: text + '\n\n— من موقع «نُور الذِّكْر»' }).catch(() => {});
-  } else copyText(text);
+  if (navigator.share) navigator.share({ text: text + '\n\n— من موقع «نُور الذِّكْر»' }).catch(() => {});
+  else copyText(text);
 }
 
-/* ---------- تقدّم أذكار اليوم والإحصائيات ---------- */
-
-const todayKey = () => new Date().toDateString();
-
-function bumpRepCounter() {
-  const day = STORE.get('nz_day', {});
-  if (day.date !== todayKey()) { day.date = todayKey(); day.reps = 0; }
-  day.reps++;
-  STORE.set('nz_day', day);
-  const tot = STORE.get('nz_total', 0);
-  STORE.set('nz_total', tot + 1);
+/* ==========================================================
+   لوحة الحساب + الحسنات + الصدارة
+   ========================================================== */
+function streak(user) {
+  if (!user.days) return 0;
+  let n = 0; const d = new Date();
+  while (user.days[d.toISOString().slice(0, 10)]) { n++; d.setDate(d.getDate() - 1); }
+  return n;
 }
 
-function renderDayProgress() {
-  if (!document.getElementById('dpValue')) return;
-  const h = new Date().getHours();
-  const isMorning = h >= 4 && h < 16;
-  const secId = isMorning ? 'morning' : 'evening';
-  const sec = SECTIONS.find((s) => s.id === secId);
-  const list = sec.items;
-  const prog = STORE.get('nz_done_' + secId, {});
-  const totalReps = list.reduce((a, it) => a + (it.count || 1), 0);
-  const doneReps = list.reduce((a, it, i) => a + Math.min(prog[i] || 0, it.count || 1), 0);
-  const pct = totalReps ? Math.round((doneReps / totalReps) * 100) : 0;
-  $('#dpValue').textContent = `${doneReps} / ${totalReps}`;
-  const fill = $('#dpFill');
-  fill.style.width = pct + '%';
-  fill.style.minWidth = doneReps > 0 && doneReps < totalReps ? '14px' : '0';
-  const hint = $('#dpHint');
-  if (pct === 0) hint.textContent = isMorning ? 'ابدأ صباحك بذكر الله، فيه الخيرُ كله.' : 'مساؤك مبارك، ابدأ أذكار المساء الآن.';
-  else if (pct === 100) hint.textContent = 'ما شاء الله! أتممتَ أذكار ' + (isMorning ? 'الصباح' : 'المساء') + ' كاملة 🌿';
-  else hint.textContent = `أنجزتَ ${doneReps} من ${totalReps} تسبيحة اليوم، واصِلْ الباقي!`;
-
-  // الرقائق
-  const day = STORE.get('nz_day', {});
-  $('#chipDone').textContent = (day.date === todayKey() ? day.reps : 0);
-  const leftAll = ['morning', 'evening'].reduce((acc, id) => {
-    const s = SECTIONS.find((x) => x.id === id);
-    const p = STORE.get('nz_done_' + id, {});
-    return acc + s.items.reduce((a, it, i) => {
-      const c = p[i] || 0;
-      return a + Math.max((it.count || 1) - c, 0);
-    }, 0);
-  }, 0);
-  $('#chipLeft').textContent = leftAll;
-  $('#chipTotal').textContent = STORE.get('nz_total', 0);
+function refreshUserUI(opts = {}) {
+  const user = Auth.me();
+  const chip = $('#userChip');
+  if (!chip) return;
+  if (user) {
+    chip.innerHTML = `
+      <div class="flex items-center gap-3 rounded-2xl bg-emerald-800/60 border border-white/10 p-3">
+        <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-300 to-amber-500 text-emerald-950 font-head font-bold grid place-items-center text-lg shrink-0">${user.u[0]}</span>
+        <div class="min-w-0">
+          <div class="text-sm font-bold text-amber-100 truncate">${user.u}</div>
+          <div class="text-[11px] text-emerald-200/80">💰 الحسنات: <b class="text-amber-300">${user.hasanat || 0}</b></div>
+        </div>
+      </div>`;
+    $('#dashUserHint')?.classList.add('hidden');
+  } else {
+    chip.innerHTML = `
+      <button onclick="openView('profile')" class="w-full flex items-center gap-3 rounded-2xl bg-white/5 border border-dashed border-white/20 p-3 hover:bg-white/10 transition-colors">
+        <span class="w-10 h-10 rounded-xl bg-white/10 grid place-items-center text-xl">👤</span>
+        <div class="text-right">
+          <div class="text-sm font-bold text-white">زائر</div>
+          <div class="text-[11px] text-emerald-200/70">سجّل دخولك ليُحسب إنجازك</div>
+        </div>
+      </button>`;
+    $('#dashUserHint')?.classList.remove('hidden');
+  }
+  renderDashboard();
+  renderLeaderboard();
+  if (opts.cards !== false) render(); // إعادة رسم البطاقات بعدّادات المستخدم
+  renderProfile();
 }
 
-/* ---------- المسبحة ---------- */
+function renderDashboard() {
+  const user = Auth.me();
+  if (!document.getElementById('dashHan')) return;
+  const han = user?.hasanat || 0;
+  const today = user?.days?.[todayKey()] || 0;
+  $('#dashHan').textContent = han;
+  $('#dashToday').textContent = today;
+  $('#dashStreak').textContent = streak(user || {});
+  const totalDone = user ? SECTIONS.reduce((a, s) => a + s.items.filter((it, i) => ((user.done[s.id] || {})[i] || 0) >= (it.count || 1)).length, 0) : 0;
+  $('#dashDone').textContent = totalDone;
 
-const PHRASES = [
-  'سُبْحَانَ اللَّهِ',
-  'الْحَمْدُ لِلَّهِ',
-  'لَا إِلَٰهَ إِلَّا اللَّهُ',
-  'اللَّهُ أَكْبَرُ',
-  'أَسْتَغْفِرُ اللَّهَ',
-  'لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ',
-];
+  // مخطط الأسبوع
+  const bars = $('#weekBars');
+  if (bars) {
+    const names = ['س', 'أ', 'ن', 'ث', 'ر', 'خ', 'ج'];
+    const d = new Date(); const dows = [6, 0, 1, 2, 3, 4, 5];
+    bars.innerHTML = '';
+    const max = Math.max(1, ...dows.map((_, k) => { const dd = new Date(); dd.setDate(d.getDate() - k); return user?.days?.[dd.toISOString().slice(0, 10)] || 0; }));
+    dows.forEach((_, k) => {
+      const dd = new Date(); dd.setDate(d.getDate() - k);
+      const v = user?.days?.[dd.toISOString().slice(0, 10)] || 0;
+      const el = document.createElement('div');
+      el.className = 'flex flex-col items-center gap-1 flex-1';
+      el.innerHTML = `
+        <div class="w-full h-24 rounded-t-lg bg-emerald-100 dark:bg-emerald-900/50 grid place-items-end overflow-hidden">
+          <div class="w-full bg-gradient-to-t from-emerald-600 to-amber-400 rounded-t-lg transition-all duration-700" style="height:${(v / max) * 100}%"></div>
+        </div>
+        <span class="text-[10px] text-stone-500 dark:text-stone-400">${names[(dd.getDay() + 6) % 7]}</span>`;
+      bars.appendChild(el);
+    });
+  }
+}
 
-const tasbihState = {
-  phrase: STORE.get('nz_phrase', PHRASES[0]),
-  count: STORE.get('nz_count', 0),
-  target: STORE.get('nz_target', 33),
-  rounds: STORE.get('nz_rounds', 0),
-};
+function renderLeaderboard() {
+  const host = $('#boardBody'); if (!host) return;
+  const users = Object.values(DB.load()).sort((a, b) => (b.hasanat || 0) - (a.hasanat || 0));
+  const medals = ['🥇', '🥈', '🥉'];
+  host.innerHTML = users.length === 0
+    ? `<div class="py-10 text-center text-stone-500 dark:text-stone-400 text-sm">لا توجد حسابات بعد — أنشئ حسابك لتكون الأوّل 🌟</div>`
+    : users.map((u, i) => `
+      <tr class="border-b border-emerald-100/60 dark:border-emerald-800/40 last:border-0 hover:bg-emerald-50/60 dark:hover:bg-emerald-900/30 transition-colors ${Auth.current() === u.u ? '!bg-amber-50 dark:!bg-amber-400/10' : ''}">
+        <td class="py-3 px-4 font-bold text-sm">${medals[i] || `<span class="text-stone-400">${i + 1}</span>`}</td>
+        <td class="py-3 px-4 font-bold">${u.u}${Auth.current() === u.u ? ' <span class="text-[10px] bg-emerald-600 text-white rounded px-1.5 py-0.5">أنت</span>' : ''}</td>
+        <td class="py-3 px-4 text-emerald-700 dark:text-amber-300 font-head font-bold">${u.hasanat || 0}</td>
+        <td class="py-3 px-4 text-stone-500 dark:text-stone-400 text-sm">${u.reps || 0}</td>
+        <td class="py-3 px-4 text-stone-500 dark:text-stone-400 text-sm">${streak(u)} ${streak(u) ? '🔥' : ''}</td>
+      </tr>`).join('');
+}
+
+function renderProfile() {
+  const host = $('#profileBody'); if (!host) return;
+  const user = Auth.me();
+  if (!user) {
+    host.innerHTML = `
+      <div class="max-w-md mx-auto card-in">
+        <div class="rounded-3xl bg-white dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800/60 shadow-md p-8 text-center">
+          <div class="text-5xl mb-3">🔐</div>
+          <h3 class="font-head text-xl font-bold mb-1">حسابك المحلي</h3>
+          <p class="text-sm text-stone-500 dark:text-stone-400 mb-6">أنشئ حساباً أو سجّل دخولك — تُحفظ بياناتك في جهازك فقط (localStorage)، لا تُرسل لأي خادم.</p>
+          <div id="authErr" class="hidden mb-3 text-sm text-rose-600 bg-rose-50 dark:bg-rose-900/30 rounded-xl px-3 py-2"></div>
+          <input id="inUser" placeholder="اسم المستخدم" class="w-full rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-emerald-900/40 px-4 py-3 mb-3 text-sm focus:outline-none focus:ring-2 ring-amber-300 transition" />
+          <input id="inPass" type="password" placeholder="كلمة السر" class="w-full rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-emerald-900/40 px-4 py-3 mb-3 text-sm focus:outline-none focus:ring-2 ring-amber-300 transition" />
+          <div class="flex gap-2 mb-4">
+            <button id="btnLogin" class="flex-1 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl py-3 text-sm font-bold transition-colors">دخول</button>
+            <button id="btnRegister" class="flex-1 bg-amber-400 hover:bg-amber-300 text-emerald-950 rounded-xl py-3 text-sm font-bold transition-colors">حساب جديد</button>
+          </div>
+          <p class="text-[11px] text-stone-400">⚙️ الحساب مخصص لوحدة هذا الجهاز — استخدم أسماء مختلفة لكل فرد من أسرتك ثم قارنوا في «الصدارة».</p>
+        </div>
+      </div>`;
+    bindAuthForm();
+  } else {
+    const per = SECTIONS.map((s) => {
+      const done = s.items.filter((it, i) => ((user.done[s.id] || {})[i] || 0) >= (it.count || 1)).length;
+      return { name: s.name, done, total: s.items.length };
+    });
+    host.innerHTML = `
+      <div class="max-w-lg mx-auto card-in">
+        <div class="rounded-3xl bg-gradient-to-br from-emerald-800 to-emerald-700 pattern-dots text-white shadow-lg p-8 text-center mb-6">
+          <span class="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-br from-amber-300 to-amber-500 grid place-items-center font-head text-4xl font-bold text-emerald-950 shadow-lg mb-3">${user.u[0]}</span>
+          <h3 class="font-head text-2xl font-bold">${user.u}</h3>
+          <p class="text-emerald-200/80 text-xs mt-1">عضو منذ ${user.created}</p>
+          <div class="grid grid-cols-3 gap-3 mt-6">
+            <div class="rounded-2xl bg-white/10 p-3"><div class="font-head text-2xl font-bold text-amber-300">${user.hasanat}</div><small class="text-emerald-200/80">حسنات</small></div>
+            <div class="rounded-2xl bg-white/10 p-3"><div class="font-head text-2xl font-bold text-amber-300">${user.reps}</div><small class="text-emerald-200/80">تسبيحة</small></div>
+            <div class="rounded-2xl bg-white/10 p-3"><div class="font-head text-2xl font-bold text-amber-300">${streak(user)}</div><small class="text-emerald-200/80">يوم متتابع</small></div>
+          </div>
+          <button id="btnLogout" class="mt-6 w-full rounded-xl bg-white/10 hover:bg-rose-500/80 border border-white/20 py-3 text-sm font-bold transition-colors">تسجيل الخروج ↩</button>
+        </div>
+        <div class="rounded-3xl bg-white dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800/60 shadow-sm p-6">
+          <h4 class="font-head font-bold mb-4">🎯 إنجاز الأقسام</h4>
+          ${per.map((p) => `
+            <div class="mb-4 last:mb-0">
+              <div class="flex justify-between text-xs font-bold mb-1"><span>${p.name}</span><span class="text-emerald-600 dark:text-amber-300">${p.done}/${p.total}</span></div>
+              <div class="h-2.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 overflow-hidden"><div class="h-full rounded-full bg-gradient-to-l from-amber-400 to-emerald-600 transition-all duration-1000" style="width:${(p.done / p.total) * 100}%"></div></div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+    $('#btnLogout').addEventListener('click', () => { Auth.logout(); refreshUserUI(); toast('تمّ الخروج — في أمان الله'); });
+  }
+}
+
+function bindAuthForm() {
+  const showErr = (m) => { const e = $('#authErr'); e.textContent = m; e.classList.remove('hidden'); };
+  $('#btnLogin').addEventListener('click', () => {
+    const u = $('#inUser').value.trim(), p = $('#inPass').value;
+    const r = DB.login(u, p);
+    if (!r.ok) return showErr(r.err);
+    Auth.login(u); refreshUserUI(); openView('dashboard');
+    toast(`أهلاً بعودتك يا ${u} 🌟`, true);
+  });
+  $('#btnRegister').addEventListener('click', () => {
+    const u = $('#inUser').value.trim(), p = $('#inPass').value;
+    const r = DB.register(u, p);
+    if (!r.ok) return showErr(r.err);
+    DB.login(u, p); Auth.login(u); refreshUserUI(); openView('dashboard');
+    toast(`أنشأنا حسابك يا ${u} — يمكنك التسبيح الآن!`, true);
+  });
+}
+
+/* ==========================================================
+   المسبحة
+   ========================================================== */
+const PHRASES = ['سُبْحَانَ اللَّهِ', 'الْحَمْدُ لِلَّهِ', 'لَا إِلَٰهَ إِلَّا اللَّهُ', 'اللَّهُ أَكْبَرُ', 'أَسْتَغْفِرُ اللَّهَ', 'لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ'];
+const tasbihState = { phrase: STORE.get('nz_phrase', PHRASES[0]), count: STORE.get('nz_count', 0), target: STORE.get('nz_target', 33), rounds: STORE.get('nz_rounds', 0) };
 
 function renderTasbih() {
   if (!document.getElementById('tasbihPhrase')) return;
   $('#tasbihPhrase').textContent = tasbihState.phrase;
   $('#tasbihCount').textContent = tasbihState.count;
   $('#tasbihRounds').textContent = tasbihState.rounds;
-  $$('.phrase-chip').forEach((c) => c.classList.toggle('active', c.dataset.phrase === tasbihState.phrase));
-  $$('.target-chip').forEach((c) => c.classList.toggle('active', +c.dataset.target === tasbihState.target));
+  // شرائح جمل التسبيح
+  const row = $('#phraseRow');
+  if (row) {
+    row.innerHTML = PHRASES.map((p) => `
+      <button class="phrase-chip rounded-xl px-3.5 py-1.5 text-sm font-bold border transition-all duration-200
+        ${p === tasbihState.phrase
+          ? 'bg-emerald-700 text-white border-emerald-700 shadow-sm scale-105'
+          : 'bg-emerald-50 dark:bg-emerald-900/40 border-emerald-200 dark:border-emerald-800 hover:border-emerald-400 text-emerald-800 dark:text-emerald-200'}"
+        data-phrase="${p}">${p}</button>`).join('');
+  }
+  $$('.target-chip').forEach((c) => {
+    const on = +c.dataset.target === tasbihState.target;
+    c.classList.toggle('!bg-emerald-700', on);
+    c.classList.toggle('!text-white', on);
+    c.classList.toggle('!border-emerald-700', on);
+    c.classList.toggle('scale-105', on);
+  });
   updateRing();
 }
-
 function updateRing() {
-  const ring = $('#tasbihRing');
-  const circ = 2 * Math.PI * 54; // ≈ 339.3
+  const ring = document.getElementById('tasbihRing'); if (!ring) return;
   const t = tasbihState.target > 0 ? tasbihState.target : 33;
-  const ratio = Math.min(tasbihState.count / t, 1);
-  ring.style.strokeDashoffset = circ * (1 - ratio);
+  ring.style.strokeDashoffset = 339.3 * (1 - Math.min(tasbihState.count / t, 1));
 }
-
 function tasbihTap() {
   tasbihState.count++;
-  let completed = false;
-  if (tasbihState.target > 0 && tasbihState.count >= tasbihState.target) {
-    tasbihState.rounds++;
-    completed = true;
-    tasbihState.count = 0;
-  } else if (tasbihState.target === 0 && tasbihState.count > 0 && tasbihState.count % 33 === 0) {
-    tasbihState.rounds++;
-    completed = true;
+  let done = false;
+  if (tasbihState.target > 0 && tasbihState.count >= tasbihState.target) { tasbihState.rounds++; done = true; tasbihState.count = 0; }
+  else if (tasbihState.target === 0 && tasbihState.count > 0 && tasbihState.count % 33 === 0) { tasbihState.rounds++; done = true; }
+  const me = Auth.me();
+  if (me) {
+    const users = DB.load(); const u = users[Auth.current()];
+    u.reps++; u.hasanat += HASANAT_PER_REP; u.days = u.days || {};
+    u.days[todayKey()] = (u.days[todayKey()] || 0) + 1;
+    DB.save(users);
   }
-  STORE.set('nz_phrase', tasbihState.phrase);
-  STORE.set('nz_count', tasbihState.count);
-  STORE.set('nz_target', tasbihState.target);
-  STORE.set('nz_rounds', tasbihState.rounds);
-  renderTasbih();
-  if (completed) toast('أتممت ٣٣ من «' + tasbihState.phrase + '» ✓', true);
+  STORE.set('nz_phrase', tasbihState.phrase); STORE.set('nz_count', tasbihState.count);
+  STORE.set('nz_target', tasbihState.target); STORE.set('nz_rounds', tasbihState.rounds);
+  renderTasbih(); refreshUserUI({ cards: false });
+  if (done) toast(`أتممت دورة «${tasbihState.phrase}» — بارك الله فيك`, true);
 }
-
 function bindTasbih() {
   if (!document.getElementById('tasbihBtn')) return;
   $('#tasbihBtn').addEventListener('click', tasbihTap);
-  $('#tasbihReset').addEventListener('click', () => {
-    tasbihState.count = 0;
-    STORE.set('nz_count', 0);
-    renderTasbih();
+  $('#tasbihReset').addEventListener('click', () => { tasbihState.count = 0; STORE.set('nz_count', 0); renderTasbih(); });
+  $('#phraseRow')?.addEventListener('click', (e) => {
+    const c = e.target.closest('.phrase-chip'); if (!c) return;
+    tasbihState.phrase = c.dataset.phrase; tasbihState.count = 0;
+    STORE.set('nz_phrase', c.dataset.phrase); STORE.set('nz_count', 0); renderTasbih();
   });
-  $$('.phrase-chip').forEach((c) =>
-    c.addEventListener('click', () => {
-      tasbihState.phrase = c.dataset.phrase;
-      tasbihState.count = 0;
-      STORE.set('nz_phrase', tasbihState.phrase);
-      STORE.set('nz_count', 0);
-      renderTasbih();
-    })
-  );
-  $$('.target-chip').forEach((c) =>
-    c.addEventListener('click', () => {
-      tasbihState.target = +c.dataset.target;
-      STORE.set('nz_target', tasbihState.target);
-      renderTasbih();
-    })
-  );
+  $$('.target-chip').forEach((c) => c.addEventListener('click', () => {
+    tasbihState.target = +c.dataset.target; STORE.set('nz_target', tasbihState.target); renderTasbih();
+  }));
 }
 
-/* ---------- خط / سمة / قائمة ---------- */
-
-function bindUI() {
-  // الوضع الليلي
-  const themeBtn = $('#themeBtn');
-  if (document.body.classList.contains('dark')) themeBtn.textContent = '☀️';
-  else themeBtn.textContent = '🌙';
-  themeBtn.addEventListener('click', () => {
-    const nowDark = document.body.classList.toggle('dark');
-    STORE.set('nz_dark', nowDark);
-    themeBtn.textContent = nowDark ? '☀️' : '🌙';
-  });
-
-  // حجم الخط
-  let fontIdx = STORE.get('nz_font', 0);
-  const applyFont = () => {
-    const scales = [1, 1.12, 1.25, 0.9];
-    document.documentElement.style.setProperty('--scale', String(scales[fontIdx]));
-  };
-  applyFont();
-  $('#fontBtn').addEventListener('click', () => {
-    fontIdx = (fontIdx + 1) % 4;
-    STORE.set('nz_font', fontIdx);
-    applyFont();
-    toast('حجم الخط: ' + ['عادي', 'كبير', 'أكبر', 'صغير'][fontIdx]);
-  });
-
-  // القائمة للجوال
-  const nav = $('#mainNav');
-  $('#menuBtn').addEventListener('click', () => nav.classList.toggle('open'));
-  nav.addEventListener('click', (e) => { if (e.target.matches('a')) nav.classList.remove('open'); });
-
-  // التنقل بين الأقسام
-  bindSectionNav();
-
-  // شريط تقدم التمرير والعودة للأعلى
-  window.addEventListener('scroll', () => {
-    const doc = document.documentElement;
-    const total = doc.scrollHeight - doc.clientHeight;
-    const pct = total > 0 ? (scrollY / total) * 100 : 0;
-    $('#scrollProgress').style.width = pct + '%';
-    $('#toTop').classList.toggle('show', scrollY > 500);
-  }, { passive: true });
-
-  $('#toTop').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-}
-
-/* ---------- التنقل بين الأقسام ---------- */
-
-const SECTION_DESCS = {
-  morning: 'تورد بعد صلاة الفجر حتى طلوع الشمس — يحفظك الله طوال يومك.',
-  evening: 'تورد بعد صلاة العصر حتى غروب شمس — حظن اليوم كله بحفظ الله.',
-  sleep: 'ما يقال أنتَ إلى فراشك — تنام على حفظ الله وعابت أن تولّي أمرَك إليه.',
-  prayer: 'أذكار ثابتة بعد كل صلاة مكتوبة — ذكر باكٍ ثم تسبيح وتحميد.',
-  duas: 'أدعية ثابتة في الصحيحين والسنن — لكل شأن: الهم، الكرب، الثبات، والرزق.',
-  tasbih: 'سبحة إلكترونية + عدّاد بهدف (33/99/100) يحفظ دوراتك تلقائياً.',
+/* ==========================================================
+   التنقل (القائمة الجانبية)
+   ========================================================== */
+const VIEW_TITLES = {
+  dashboard: 'لوحة إنجازك', morning: 'أذكار الصباح', evening: 'أذكار المساء', sleep: 'أذكار النوم',
+  prayer: 'الذكر بعد الصلاة', duas: 'أدعية مأثورة', tasbih: 'المسبحة الإلكترونية',
+  leaderboard: 'لوحة الصدارة', profile: 'حسابي',
 };
 
-function showSection(id, scroll = true) {
-  $$('.zikr-section').forEach((s) => s.classList.toggle('active', s.id === id));
-  const tab = document.querySelector(`.cat-tab[data-target="${id}"]`);
-  if (tab && document.getElementById('catDesc')) {
-    $$('.cat-tab').forEach((t) => t.classList.toggle('active', t === tab));
-    $('#catDesc').textContent = SECTION_DESCS[id] || '';
-  }
-  $$('#mainNav .nav-link').forEach((l) => l.classList.toggle('active', l.getAttribute('href') === '#' + id));
-  history.replaceState(null, '', '#' + id);
-  if (scroll) {
-    const top = $('#catTop').getBoundingClientRect().top + window.scrollY - 60;
-    window.scrollTo({ top, behavior: 'smooth' });
-  }
+function openView(id, scroll = true) {
+  $$('.view-sec').forEach((s) => s.classList.toggle('hidden', s.id !== 'view-' + id));
+  const v = $('#view-' + id);
+  if (v) { v.classList.remove('view-in'); void v.offsetWidth; v.classList.add('view-in'); }
+  $$('.side-link').forEach((l) => {
+    const on = l.dataset.view === id;
+    l.classList.toggle('bg-white/15', on);
+    l.classList.toggle('text-amber-300', on);
+    l.classList.toggle('border-amber-300/40', on);
+  });
+  $('#pageTitle') && ($('#pageTitle').textContent = VIEW_TITLES[id] || '');
   if (id === 'tasbih') renderTasbih();
+  if (id === 'leaderboard') renderLeaderboard();
+  if (id === 'profile') renderProfile();
+  history.replaceState(null, '', '#' + id);
+  if (scroll) window.scrollTo({ top: 0, behavior: 'smooth' });
+  // إغلاق القائمة على الجوال
+  if (typeof closeSidebar === 'function') closeSidebar();
 }
 
-function bindSectionNav() {
-  $$('.cat-tab').forEach((t) =>
-    t.addEventListener('click', () => showSection(t.dataset.target))
-  );
-  $$('#mainNav .nav-link, .hero-cta .btn').forEach((a) => {
-    if (!a.getAttribute('href')?.startsWith('#')) return;
-    a.addEventListener('click', (e) => {
-      e.preventDefault();
-      const id = a.getAttribute('href').slice(1);
-      if (id === 'home') { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
-      showSection(id);
+function bindNav() {
+  $$('.side-link').forEach((l) => l.addEventListener('click', (e) => { e.preventDefault(); openView(l.dataset.view); }));
+  $$('.js-goto').forEach((b) => b.addEventListener('click', () => openView(b.dataset.view)));
+  const drawer = $('#sidebar'), backdrop = $('#sideBackdrop');
+  const open = () => { drawer.classList.remove('translate-x-full'); backdrop.classList.remove('hidden'); document.body.classList.add('overflow-hidden'); };
+  window.closeSidebar = () => { if (innerWidth < 1024) { drawer.classList.add('translate-x-full'); backdrop.classList.add('hidden'); document.body.classList.remove('overflow-hidden'); } };
+  $('#menuBtn')?.addEventListener('click', open);
+  $('#sideClose')?.addEventListener('click', () => { drawer.classList.add('translate-x-full'); backdrop.classList.add('hidden'); document.body.classList.remove('overflow-hidden'); });
+  backdrop?.addEventListener('click', () => { drawer.classList.add('translate-x-full'); backdrop.classList.add('hidden'); document.body.classList.remove('overflow-hidden'); });
+  window.addEventListener('scroll', () => {
+    $('#toTop')?.classList.toggle('show', scrollY > 500);
+  }, { passive: true });
+  $('#toTop')?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+}
+
+/* ---------- خط / سمة ---------- */
+function bindUI() {
+  // السمة الليلية (html.dark + body.dark للتوافق مع الصفحة القديمة islam.html)
+  const applyDark = (dark) => {
+    document.documentElement.classList.toggle('dark', dark);
+    document.body.classList.toggle('dark', dark);
+  };
+  applyDark(STORE.get('nz_dark', true)); // الوضع الليلي هو الافتراضي للهوية
+  const themeBtn = $('#themeBtn');
+  if (themeBtn) {
+    themeBtn.textContent = document.documentElement.classList.contains('dark') ? '☀️' : '🌙';
+    themeBtn.addEventListener('click', () => {
+      const dark = !document.documentElement.classList.contains('dark');
+      applyDark(dark);
+      STORE.set('nz_dark', dark);
+      themeBtn.textContent = dark ? '☀️' : '🌙';
     });
-  });
+  }
+  let fontIdx = STORE.get('nz_font', 0);
+  const applyFont = () => document.documentElement.style.setProperty('--scale', ['1', '1.12', '1.25', '0.9'][fontIdx]);
+  applyFont();
+  $('#fontBtn')?.addEventListener('click', () => { fontIdx = (fontIdx + 1) % 4; STORE.set('nz_font', fontIdx); applyFont(); toast('حجم الخط: ' + ['عادي', 'كبير', 'أكبر', 'صغير'][fontIdx]); });
 }
 
 /* ---------- إقلاع ---------- */
-
 document.addEventListener('DOMContentLoaded', () => {
-  if (STORE.get('nz_dark', false)) document.body.classList.add('dark');
+  const dark = STORE.get('nz_dark', true);
+  document.documentElement.classList.toggle('dark', dark);
+  document.body.classList.toggle('dark', dark);
   render();
   bindCounters();
-  bindResetAll();
   bindTasbih();
   renderTasbih();
+  bindNav();
   bindUI();
-  // تفعيل القسم من العنوان (إن وُجد) وإلا الافتراضي — في الصفحات الفرعية بلا أذكار لا نغيّر شيئاً
-  if (SECTIONS.some((s) => document.getElementById(s.target))) {
-    const initId = SECTION_DESCS[location.hash.slice(1)] ? location.hash.slice(1) : 'morning';
-    showSection(initId, false);
-  }
-  window.scrollTo(0, 0);
-  renderDayProgress();
-  setInterval(renderDayProgress, 60 * 1000);
+  refreshUserUI();
+  openView(VIEW_TITLES[location.hash.slice(1)] ? location.hash.slice(1) : 'dashboard', false);
+  // تحديث الحسنات كل دقيقة (لتغيير اليوم)
+  setInterval(renderDashboard, 60 * 1000);
 });
